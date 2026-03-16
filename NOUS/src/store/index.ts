@@ -35,9 +35,15 @@ interface GymSlice {
   activeWorkoutType: string | null;
   exercises: ExerciseEntry[];
   stopwatchSeconds: number;
+  restTimerSeconds: number;
+  restTimerDuration: number;
+  isRestTimerRunning: boolean;
   setActiveWorkoutType: (type: string | null) => void;
   setExercises: (exercises: ExerciseEntry[]) => void;
   setStopwatchSeconds: (seconds: number) => void;
+  startRestTimer: (duration: number) => void;
+  tickRestTimer: () => void;
+  stopRestTimer: () => void;
 }
 
 interface FoodSlice {
@@ -83,9 +89,19 @@ export const useStore = create<StoreState>((set) => ({
   activeWorkoutType: null,
   exercises: [],
   stopwatchSeconds: 0,
+  restTimerSeconds: 0,
+  restTimerDuration: 90,
+  isRestTimerRunning: false,
   setActiveWorkoutType: (type) => set({ activeWorkoutType: type }),
   setExercises: (exercises) => set({ exercises }),
   setStopwatchSeconds: (seconds) => set({ stopwatchSeconds: seconds }),
+  startRestTimer: (duration) => set({ restTimerSeconds: duration, restTimerDuration: duration, isRestTimerRunning: true }),
+  tickRestTimer: () => set((state) => {
+    const next = state.restTimerSeconds - 1;
+    if (next <= 0) return { restTimerSeconds: 0, isRestTimerRunning: false };
+    return { restTimerSeconds: next };
+  }),
+  stopRestTimer: () => set({ restTimerSeconds: 0, isRestTimerRunning: false }),
 
   // Food
   selectedDate: new Date().toISOString().split("T")[0],
