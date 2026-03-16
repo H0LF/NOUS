@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { FileExplorer } from "@/components/notes/FileExplorer";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { NeuralGraph } from "@/components/notes/NeuralGraph";
@@ -18,7 +18,35 @@ export default function NotesPage() {
   const [allNotes, setAllNotes] = useState<Note[]>([]);
   const [allFolders, setAllFolders] = useState<Folder[]>([]);
   const [showGraph, setShowGraph] = useState(true);
+  const [graphWidth, setGraphWidth] = useState(300);
+  const isResizingRef = useRef(false);
+  const resizeStartRef = useRef({ x: 0, width: 0 });
   const [mobilePanel, setMobilePanel] = useState<Panel>("list");
+
+  // Graph panel resize handlers
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isResizingRef.current = true;
+    resizeStartRef.current = { x: e.clientX, width: graphWidth };
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+
+    const handleMove = (ev: MouseEvent) => {
+      if (!isResizingRef.current) return;
+      const delta = resizeStartRef.current.x - ev.clientX;
+      const newWidth = Math.max(200, Math.min(600, resizeStartRef.current.width + delta));
+      setGraphWidth(newWidth);
+    };
+    const handleUp = () => {
+      isResizingRef.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+  }, [graphWidth]);
 
   useEffect(() => {
     if (!user) return;
@@ -127,12 +155,20 @@ export default function NotesPage() {
           <NoteEditor className="h-full" />
         </div>
 
-        {/* Neural Graph (toggleable) */}
+        {/* Neural Graph (toggleable, resizable) */}
         {showGraph && (
           <div
-            className="w-[300px] shrink-0 flex flex-col"
-            style={{ borderLeft: "1px solid rgba(255,255,255,0.05)" }}
+            className="shrink-0 flex flex-col relative"
+            style={{ width: graphWidth, borderLeft: "1px solid rgba(255,255,255,0.05)" }}
           >
+            {/* Resize handle */}
+            <div
+              onMouseDown={handleResizeStart}
+              className="absolute left-0 top-0 bottom-0 w-1 z-20"
+              style={{ cursor: "col-resize" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(124,122,255,0.3)"; }}
+              onMouseLeave={(e) => { if (!isResizingRef.current) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+            />
             <div
               className="flex items-center justify-between px-4 py-3 shrink-0"
               style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}

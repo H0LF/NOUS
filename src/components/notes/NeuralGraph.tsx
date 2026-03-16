@@ -644,43 +644,39 @@ export const NeuralGraph = ({
     camRef.current = { x: 0, y: 0, zoom: 1 };
   }, []);
 
-  if (notes.length === 0) {
-    return (
-      <div
-        className="w-full h-full flex flex-col items-center justify-center gap-3"
-        style={{ background: BG }}
-      >
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center"
-          style={{
-            background: "rgba(124,122,255,0.1)",
-            border: "1px solid rgba(124,122,255,0.2)",
-          }}
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#7c7aff"
-            strokeWidth="1.8"
-          >
-            <circle cx="18" cy="5" r="3" />
-            <circle cx="6" cy="12" r="3" />
-            <circle cx="18" cy="19" r="3" />
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-          </svg>
-        </div>
-        <p className="text-[11px] font-medium" style={{ color: "#3a3a50" }}>
-          Create notes to build your graph
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="relative w-full h-full" style={{ background: BG }}>
+      {notes.length === 0 && (
+        <div
+          className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3"
+        >
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center"
+            style={{
+              background: "rgba(124,122,255,0.1)",
+              border: "1px solid rgba(124,122,255,0.2)",
+            }}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#7c7aff"
+              strokeWidth="1.8"
+            >
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            </svg>
+          </div>
+          <p className="text-[11px] font-medium" style={{ color: "#3a3a50" }}>
+            Create notes to build your graph
+          </p>
+        </div>
+      )}
       <canvas
         ref={canvasRef}
         className="w-full h-full"
