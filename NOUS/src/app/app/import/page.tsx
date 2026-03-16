@@ -332,7 +332,7 @@ export default function ImportPage() {
           </div>
           <div
             className="divide-y"
-            style={{ divideColor: "rgba(255,255,255,0.04)" }}
+            style={{ borderColor: "rgba(255,255,255,0.04)" } as React.CSSProperties}
           >
             {IMPORT_DATA.events.map((e: any) => (
               <div key={e.id} className="flex items-center gap-3 px-4 py-2.5">

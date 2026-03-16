@@ -15,7 +15,7 @@ import { format } from "date-fns";
 import { where, limit } from "firebase/firestore";
 
 export default function FoodPage() {
-  const { user, userSettings } = useStore();
+  const { user, settings: userSettings } = useStore();
   const { queryDocs, saveDoc, deleteDocument } = useFirestore();
   const { settings } = useSettings(); // Ensure settings are loaded
   const [todayLog, setTodayLog] = useState<FoodLog | null>(null);

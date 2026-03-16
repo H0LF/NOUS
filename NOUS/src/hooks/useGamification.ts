@@ -115,16 +115,7 @@ export function useGamification(): GamificationData {
 
       // Food: +10 XP per day with at least one meal logged
       const loggedFoodDates = foodLogs
-        .filter((l) => {
-          const meals = l.meals;
-          return (
-            meals.breakfast.length +
-              meals.lunch.length +
-              meals.dinner.length +
-              meals.snacks.length >
-            0
-          );
-        })
+        .filter((l) => l.items && l.items.length > 0)
         .map((l) => l.date);
       xp += loggedFoodDates.length * 10;
 
@@ -167,12 +158,7 @@ export function useGamification(): GamificationData {
 
       // ── Badges ──────────────────────────────────────────────────────────────
       const totalMeals = foodLogs.reduce(
-        (t, l) =>
-          t +
-          l.meals.breakfast.length +
-          l.meals.lunch.length +
-          l.meals.dinner.length +
-          l.meals.snacks.length,
+        (t, l) => t + (l.items?.length || 0),
         0,
       );
 

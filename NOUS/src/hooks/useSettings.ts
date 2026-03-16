@@ -38,5 +38,11 @@ export function useSettings() {
     await saveDoc("settings", "prefs", newSettings);
   };
 
-  return { settings, saveSettings };
+  const updateSettings = async (partial: Partial<UserSettings>) => {
+    const merged = { ...settings, ...partial };
+    setSettings(merged);
+    await saveDoc("settings", "prefs", merged);
+  };
+
+  return { settings, saveSettings, updateSettings };
 }

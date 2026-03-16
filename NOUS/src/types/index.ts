@@ -66,18 +66,14 @@ export interface FoodItem {
   fiber: number;
   quantity: number; // grams
   source: "barcode" | "ai";
+  meal?: string;
 }
 
 export interface FoodLog {
   id: string;
   userId: string;
   date: string; // YYYY-MM-DD
-  meals: {
-    breakfast: FoodItem[];
-    lunch: FoodItem[];
-    dinner: FoodItem[];
-    snacks: FoodItem[];
-  };
+  items: FoodItem[];
 }
 
 export interface AITask {
