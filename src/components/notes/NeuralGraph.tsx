@@ -200,23 +200,29 @@ export const NeuralGraph = ({
     edgesRef.current = edges;
   };
 
+  // Track whether we've successfully built the graph for the current notes
+  const builtForRef = useRef<string>("");
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const W = canvas.offsetWidth;
-    const H = canvas.offsetHeight;
-    if (W > 0 && H > 0) {
-      buildGraph(W, H, notes, folders);
-      return;
-    }
-    const ro = new ResizeObserver(() => {
+
+    const key = notes.map(n => n.id).join(",") + "|" + folders.map(f => f.id).join(",");
+
+    const tryBuild = () => {
       const w = canvas.offsetWidth;
       const h = canvas.offsetHeight;
-      if (w > 0 && h > 0) {
-        ro.disconnect();
+      if (w > 0 && h > 0 && builtForRef.current !== key) {
+        builtForRef.current = key;
         buildGraph(w, h, notes, folders);
       }
-    });
+    };
+
+    // Try immediately
+    tryBuild();
+
+    // Also observe for layout changes (handles the case where canvas has 0 size at mount)
+    const ro = new ResizeObserver(() => tryBuild());
     ro.observe(canvas);
     return () => ro.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
