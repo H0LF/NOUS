@@ -125,7 +125,7 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
     >
       {/* Draw toolbar */}
       <div
-        className="flex items-center gap-2 px-4 py-2 shrink-0 flex-wrap"
+        className="flex items-center gap-3 px-5 py-3 shrink-0 flex-wrap"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
       >
         {/* Tool toggle */}
@@ -137,10 +137,10 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
             <button
               key={t}
               onClick={() => setTool(t)}
-              className="px-3 py-1.5 text-[11px] font-medium transition-colors"
+              className="px-3 py-1.5 text-[12px] font-medium transition-all duration-150"
               style={{
                 background:
-                  tool === t ? "rgba(124,122,255,0.2)" : "transparent",
+                  tool === t ? "rgba(124,122,255,0.15)" : "transparent",
                 color: tool === t ? "#7c7aff" : "#6a6a7e",
               }}
             >
@@ -150,7 +150,7 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
         </div>
 
         {/* Colors */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           {DRAW_COLORS.map((c) => (
             <button
               key={c}
@@ -158,16 +158,16 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
                 setColor(c);
                 setTool("pen");
               }}
-              className="w-5 h-5 rounded-full transition-transform hover:scale-110"
+              className="w-6 h-6 rounded-full transition-all duration-150 hover:scale-110"
               style={{
                 background: c,
                 border:
                   color === c && tool === "pen"
                     ? "2px solid #fff"
-                    : "2px solid transparent",
+                    : "2px solid rgba(255,255,255,0.1)",
                 boxShadow:
                   color === c && tool === "pen"
-                    ? "0 0 6px rgba(255,255,255,0.4)"
+                    ? "0 0 8px rgba(255,255,255,0.3)"
                     : "none",
               }}
             />
@@ -180,10 +180,10 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
             <button
               key={s}
               onClick={() => setSize(s)}
-              className="w-7 h-7 flex items-center justify-center rounded transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150"
               style={{
                 background:
-                  size === s ? "rgba(124,122,255,0.15)" : "transparent",
+                  size === s ? "rgba(124,122,255,0.12)" : "transparent",
               }}
             >
               <div
@@ -191,7 +191,7 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
                 style={{
                   width: Math.min(s * 2, 18),
                   height: Math.min(s * 2, 18),
-                  background: size === s ? "#7c7aff" : "#6a6a7e",
+                  background: size === s ? "#7c7aff" : "#4a4a5e",
                 }}
               />
             </button>
@@ -202,10 +202,10 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
 
         <button
           onClick={clear}
-          className="px-3 py-1.5 text-[11px] rounded-lg transition-colors"
+          className="px-4 py-2 text-[12px] font-medium rounded-lg transition-all duration-150"
           style={{
             color: "#f87171",
-            border: "1px solid rgba(248,113,113,0.2)",
+            border: "1px solid rgba(248,113,113,0.15)",
           }}
           onMouseEnter={(e) =>
             (e.currentTarget.style.background = "rgba(248,113,113,0.1)")
@@ -218,24 +218,23 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
         </button>
         <button
           onClick={save}
-          className="px-3 py-1.5 text-[11px] font-semibold rounded-lg transition-colors"
+          className="px-4 py-2 text-[12px] font-semibold rounded-lg transition-all duration-150"
           style={{
-            background: "rgba(124,122,255,0.2)",
-            color: "#7c7aff",
-            border: "1px solid rgba(124,122,255,0.3)",
+            background: "#7c7aff",
+            color: "#fff",
           }}
           onMouseEnter={(e) =>
-            (e.currentTarget.style.background = "rgba(124,122,255,0.3)")
+            (e.currentTarget.style.background = "#6b69e6")
           }
           onMouseLeave={(e) =>
-            (e.currentTarget.style.background = "rgba(124,122,255,0.2)")
+            (e.currentTarget.style.background = "#7c7aff")
           }
         >
-          Save Drawing
+          Save
         </button>
         <button
           onClick={onClose}
-          className="px-3 py-1.5 text-[11px] rounded-lg transition-colors"
+          className="px-4 py-2 text-[12px] rounded-lg transition-all duration-150"
           style={{
             color: "#6a6a7e",
             border: "1px solid rgba(255,255,255,0.06)",
@@ -265,7 +264,6 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
 };
 
 // ── Main editor ───────────────────────────────────────────────────────────────
-// Extract note IDs from [[wikilink]] patterns in the editor HTML
 const extractLinkedNoteIds = (
   html: string,
   allNotes: Note[],
@@ -296,11 +294,9 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const lastNoteId = useRef<string | null>(null);
 
-  // All notes — for wikilink autocomplete and backlinks
   const [allNotes, setAllNotes] = useState<Note[]>([]);
   const [backlinks, setBacklinks] = useState<Note[]>([]);
 
-  // Wikilink dropdown state
   const [wikilinkSearch, setWikilinkSearch] = useState<string | null>(null);
   const [wikilinkPos, setWikilinkPos] = useState({ top: 0, left: 0 });
   const wikilinkRangeRef = useRef<{
@@ -309,14 +305,12 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
     cursorOffset: number;
   } | null>(null);
 
-  // Subscribe to all notes for wikilink autocomplete + backlinks
   useEffect(() => {
     if (!user) return;
     const unsub = subscribeCollection<Note>("notes", setAllNotes);
     return () => unsub();
   }, [user, subscribeCollection]);
 
-  // Update backlinks when active note or allNotes changes
   useEffect(() => {
     if (!openNoteId) {
       setBacklinks([]);
@@ -371,7 +365,6 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
     setTimeout(() => setStatus(""), 2000);
   };
 
-  // ── Wikilink helpers ──────────────────────────────────────────────────────
   const detectWikilink = useCallback(() => {
     const sel = window.getSelection();
     if (!sel || !sel.rangeCount || !contentRef.current) {
@@ -424,7 +417,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
       debouncedSave(title, newContent, drawing, ids);
     },
     [allNotes, openNoteId, title, drawing],
-  ); // debouncedSave added below
+  );
 
   const debouncedSave = useDebounce(saveNote, 800);
 
@@ -442,9 +435,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
     debouncedSave(title, c, drawing, ids);
   };
 
-  // Delete whole code block when empty + Backspace/Delete, or Escape
   const handleContentKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    // Close wikilink dropdown on Escape
     if (e.key === "Escape" && wikilinkSearch !== null) {
       e.preventDefault();
       setWikilinkSearch(null);
@@ -483,7 +474,6 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
     }
   };
 
-  // Insert a code block at cursor position
   const insertCodeBlock = () => {
     contentRef.current?.focus();
     const sel = window.getSelection();
@@ -496,13 +486,11 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
     pre.textContent = sel.toString() || "// code here";
     range.deleteContents();
     range.insertNode(pre);
-    // Place cursor inside
     const newRange = document.createRange();
     newRange.selectNodeContents(pre);
     newRange.collapse(false);
     sel.removeAllRanges();
     sel.addRange(newRange);
-    // Trigger save
     setTimeout(() => {
       if (contentRef.current) {
         const c = contentRef.current.innerHTML;
@@ -518,38 +506,70 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
     saveNote(title, content, dataUrl);
   };
 
+  // ── Empty state ──
   if (!openNoteId) {
     return (
       <div
         className={`flex flex-col items-center justify-center gap-4 ${className}`}
-        style={{ background: "#0f0f15" }}
+        style={{ background: "#0d0d12" }}
       >
-        <div className="flex flex-col items-center gap-3 opacity-40">
-          <svg
-            width="36"
-            height="36"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#7c7aff"
-            strokeWidth="1.2"
-          >
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="16" y1="13" x2="8" y2="13" />
-            <line x1="16" y1="17" x2="8" y2="17" />
-          </svg>
-          <p className="text-[12px] font-medium" style={{ color: "#4a4a5e" }}>
-            Select a note to start editing
-          </p>
+        <div className="flex flex-col items-center gap-4 opacity-60">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
+            style={{ background: "rgba(124,122,255,0.06)" }}>
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#7c7aff"
+              strokeWidth="1.2"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <p className="text-[14px] font-medium mb-1" style={{ color: "#6a6a7e" }}>
+              Select a note
+            </p>
+            <p className="text-[12px]" style={{ color: "#3a3a50" }}>
+              Choose a page from the sidebar to start editing
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
+  // ── Toolbar button helper ──
+  const ToolbarBtn = ({ onClick, active, children, title: btnTitle }: {
+    onClick: () => void; active?: boolean; children: React.ReactNode; title?: string;
+  }) => (
+    <button
+      onMouseDown={(e) => { e.preventDefault(); onClick(); }}
+      className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150"
+      style={{
+        color: active ? "#e8e8f0" : "#5a5a6e",
+        background: active ? "rgba(124,122,255,0.12)" : "transparent",
+      }}
+      title={btnTitle}
+      onMouseEnter={(e) => { e.currentTarget.style.color = "#e8e8f0"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.color = active ? "#e8e8f0" : "#5a5a6e"; e.currentTarget.style.background = active ? "rgba(124,122,255,0.12)" : "transparent"; }}
+    >
+      {children}
+    </button>
+  );
+
+  const ToolbarSep = () => (
+    <div className="w-px h-5 mx-0.5" style={{ background: "rgba(255,255,255,0.06)" }} />
+  );
+
   return (
     <div
       className={`flex flex-col h-full relative ${className}`}
-      style={{ background: "#0f0f15" }}
+      style={{ background: "#0d0d12" }}
     >
       {/* Drawing overlay */}
       {showDraw && (
@@ -560,163 +580,114 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
         />
       )}
 
-      {/* Toolbar */}
+      {/* Toolbar — Notion-style floating bar */}
       <div
-        className="flex items-center justify-between px-4 py-2.5 shrink-0"
+        className="flex items-center justify-between px-4 py-2 shrink-0"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
       >
         <div className="flex items-center gap-0.5">
-          {[
-            { cmd: "bold", label: "B", style: "font-bold" },
-            { cmd: "italic", label: "I", style: "italic" },
-            { cmd: "underline", label: "U", style: "underline" },
-          ].map(({ cmd, label, style }) => (
-            <button
-              key={cmd}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                execCmd(cmd);
-              }}
-              className={`w-7 h-7 flex items-center justify-center rounded text-[12px] transition-colors ${style}`}
-              style={{ color: "#6a6a7e" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#e8e8f0")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#6a6a7e")}
-            >
-              {label}
-            </button>
-          ))}
-          <div
-            className="w-px h-4 mx-1"
-            style={{ background: "rgba(255,255,255,0.06)" }}
-          />
-          {[
-            { cmd: "formatBlock", val: "h2", label: "H2" },
-            { cmd: "formatBlock", val: "h3", label: "H3" },
-          ].map(({ cmd, val, label }) => (
-            <button
-              key={val}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                execCmd(cmd, val);
-              }}
-              className="px-2 h-7 flex items-center justify-center rounded text-[11px] font-bold transition-colors"
-              style={{ color: "#6a6a7e" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#e8e8f0")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#6a6a7e")}
-            >
-              {label}
-            </button>
-          ))}
-          <button
-            onMouseDown={(e) => {
-              e.preventDefault();
-              execCmd("insertUnorderedList");
-            }}
-            className="w-7 h-7 flex items-center justify-center rounded transition-colors"
-            style={{ color: "#6a6a7e" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#e8e8f0")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#6a6a7e")}
-          >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <line x1="8" y1="6" x2="21" y2="6" />
-              <line x1="8" y1="12" x2="21" y2="12" />
-              <line x1="8" y1="18" x2="21" y2="18" />
-              <line x1="3" y1="6" x2="3.01" y2="6" />
-              <line x1="3" y1="12" x2="3.01" y2="12" />
-              <line x1="3" y1="18" x2="3.01" y2="18" />
-            </svg>
-          </button>
+          {/* Text formatting */}
+          <ToolbarBtn onClick={() => execCmd("bold")} title="Bold">
+            <span className="text-[13px] font-bold">B</span>
+          </ToolbarBtn>
+          <ToolbarBtn onClick={() => execCmd("italic")} title="Italic">
+            <span className="text-[13px] italic">I</span>
+          </ToolbarBtn>
+          <ToolbarBtn onClick={() => execCmd("underline")} title="Underline">
+            <span className="text-[13px] underline">U</span>
+          </ToolbarBtn>
+          <ToolbarBtn onClick={() => execCmd("strikeThrough")} title="Strikethrough">
+            <span className="text-[13px] line-through">S</span>
+          </ToolbarBtn>
 
-          {/* Code block button */}
-          <div
-            className="w-px h-4 mx-1"
-            style={{ background: "rgba(255,255,255,0.06)" }}
-          />
-          <button
-            onMouseDown={(e) => {
-              e.preventDefault();
-              insertCodeBlock();
-            }}
-            className="px-2 h-7 flex items-center justify-center rounded text-[11px] font-mono transition-colors"
-            style={{ color: "#6a6a7e" }}
-            title="Insert code block"
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#30c48d")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#6a6a7e")}
-          >
-            {"</>"}
-          </button>
+          <ToolbarSep />
+
+          {/* Headings */}
+          <ToolbarBtn onClick={() => execCmd("formatBlock", "h1")} title="Heading 1">
+            <span className="text-[11px] font-bold">H1</span>
+          </ToolbarBtn>
+          <ToolbarBtn onClick={() => execCmd("formatBlock", "h2")} title="Heading 2">
+            <span className="text-[11px] font-bold">H2</span>
+          </ToolbarBtn>
+          <ToolbarBtn onClick={() => execCmd("formatBlock", "h3")} title="Heading 3">
+            <span className="text-[11px] font-bold">H3</span>
+          </ToolbarBtn>
+
+          <ToolbarSep />
+
+          {/* Lists */}
+          <ToolbarBtn onClick={() => execCmd("insertUnorderedList")} title="Bullet list">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="9" y1="6" x2="20" y2="6" />
+              <line x1="9" y1="12" x2="20" y2="12" />
+              <line x1="9" y1="18" x2="20" y2="18" />
+              <circle cx="4.5" cy="6" r="1.2" fill="currentColor" stroke="none" />
+              <circle cx="4.5" cy="12" r="1.2" fill="currentColor" stroke="none" />
+              <circle cx="4.5" cy="18" r="1.2" fill="currentColor" stroke="none" />
+            </svg>
+          </ToolbarBtn>
+          <ToolbarBtn onClick={() => execCmd("insertOrderedList")} title="Numbered list">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="10" y1="6" x2="20" y2="6" />
+              <line x1="10" y1="12" x2="20" y2="12" />
+              <line x1="10" y1="18" x2="20" y2="18" />
+              <text x="3" y="8" fontSize="7" fill="currentColor" stroke="none" fontWeight="600">1</text>
+              <text x="3" y="14" fontSize="7" fill="currentColor" stroke="none" fontWeight="600">2</text>
+              <text x="3" y="20" fontSize="7" fill="currentColor" stroke="none" fontWeight="600">3</text>
+            </svg>
+          </ToolbarBtn>
+
+          {/* Quote */}
+          <ToolbarBtn onClick={() => execCmd("formatBlock", "blockquote")} title="Quote">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21z" />
+              <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3z" />
+            </svg>
+          </ToolbarBtn>
+
+          <ToolbarSep />
+
+          {/* Code block */}
+          <ToolbarBtn onClick={insertCodeBlock} title="Code block">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg>
+          </ToolbarBtn>
 
           {/* Draw button */}
-          <button
-            onMouseDown={(e) => {
-              e.preventDefault();
-              setShowDraw(true);
-            }}
-            className="w-7 h-7 flex items-center justify-center rounded transition-colors"
-            style={{ color: "#6a6a7e" }}
-            title="Open drawing canvas"
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#e879f9")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#6a6a7e")}
-          >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
+          <ToolbarBtn onClick={() => setShowDraw(true)} title="Drawing canvas">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M12 19l7-7 3 3-7 7-3-3z" />
               <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
               <path d="M2 2l7.586 7.586" />
               <circle cx="11" cy="11" r="2" />
             </svg>
-          </button>
+          </ToolbarBtn>
         </div>
 
-        {/* Status */}
-        <div className="flex items-center gap-2">
+        {/* Status indicator */}
+        <div className="flex items-center gap-3">
           {status === "saving" && (
-            <span className="text-[10px]" style={{ color: "#4a4a5e" }}>
-              Saving…
-            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#f59e0b" }} />
+              <span className="text-[11px]" style={{ color: "#6a6a7e" }}>Saving</span>
+            </div>
           )}
           {status === "saved" && (
-            <span
-              className="flex items-center gap-1 text-[10px]"
-              style={{ color: "#30c48d" }}
-            >
-              <svg
-                width="10"
-                height="10"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-              >
+            <div className="flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#30c48d" strokeWidth="2.5">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              Saved
-            </span>
-          )}
-          {note?.updatedAt && (
-            <span className="text-[10px]" style={{ color: "#2e2e40" }}>
-              {format(new Date(note.updatedAt), "MMM d, h:mm a")}
-            </span>
+              <span className="text-[11px]" style={{ color: "#30c48d" }}>Saved</span>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Editor area */}
+      {/* ── Editor area — Notion-style centered page ── */}
       <div
-        className="flex-1 overflow-y-auto px-5 py-5 relative"
+        className="flex-1 overflow-y-auto relative"
         style={{ scrollbarWidth: "none" }}
       >
         {/* Wikilink autocomplete dropdown */}
@@ -735,21 +706,21 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
             if (suggestions.length === 0) return null;
             return (
               <div
-                className="absolute z-50 rounded-xl py-1 shadow-2xl"
+                className="absolute z-50 rounded-xl py-1.5 shadow-2xl"
                 style={{
                   top: wikilinkPos.top,
                   left: wikilinkPos.left,
-                  background: "#1e1e28",
-                  border: "1px solid rgba(124,122,255,0.25)",
-                  minWidth: 220,
-                  boxShadow: "0 16px 48px rgba(0,0,0,0.7)",
+                  background: "#1a1a24",
+                  border: "1px solid rgba(124,122,255,0.2)",
+                  minWidth: 240,
+                  boxShadow: "0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)",
                 }}
               >
                 <div
-                  className="px-3 py-1.5 text-[9px] font-semibold tracking-widest uppercase"
+                  className="px-3 py-2 text-[11px] font-medium"
                   style={{ color: "#4a4a5e" }}
                 >
-                  Link note
+                  Link to page
                 </div>
                 {suggestions.map((n) => (
                   <button
@@ -758,23 +729,23 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
                       e.preventDefault();
                       insertWikilink(n);
                     }}
-                    className="w-full text-left flex items-center gap-2 px-3 py-2 text-[12px] transition-colors"
+                    className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 text-[13px] transition-all duration-100"
                     style={{ color: "#e8e8f0" }}
                     onMouseEnter={(e) =>
                       (e.currentTarget.style.background =
-                        "rgba(124,122,255,0.12)")
+                        "rgba(124,122,255,0.10)")
                     }
                     onMouseLeave={(e) =>
                       (e.currentTarget.style.background = "transparent")
                     }
                   >
                     <svg
-                      width="10"
-                      height="10"
+                      width="14"
+                      height="14"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="#7c7aff"
-                      strokeWidth="2"
+                      strokeWidth="1.5"
                     >
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                       <polyline points="14 2 14 8 20 8" />
@@ -785,67 +756,53 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
               </div>
             );
           })()}
-        <div className="max-w-[860px] mx-auto">
+
+        {/* Notion-style page content with generous padding */}
+        <div className="max-w-[720px] mx-auto px-6 md:px-12 py-10 md:py-16">
           {/* Title */}
           <div
             ref={titleRef}
             contentEditable
             suppressContentEditableWarning
             onInput={handleTitleInput}
-            className="outline-none mb-6 leading-tight"
+            className="outline-none mb-2 leading-tight"
             style={{
-              fontSize: "32px",
+              fontSize: "40px",
               fontWeight: 700,
               color: "#e8e8f0",
-              letterSpacing: "-0.02em",
-              minHeight: "1.2em",
+              letterSpacing: "-0.03em",
+              lineHeight: 1.15,
+              minHeight: "1.15em",
             }}
             data-placeholder="Untitled"
           />
 
-          {/* Metadata */}
+          {/* Metadata row — Notion-style properties */}
           {note && (
-            <div
-              className="flex items-center gap-4 mb-8 pb-6"
-              style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
-            >
-              <div className="flex items-center gap-1.5">
-                <svg
-                  width="11"
-                  height="11"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#3a3a50"
-                  strokeWidth="2"
-                >
-                  <rect x="3" y="4" width="18" height="18" rx="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-                <span className="text-[11px]" style={{ color: "#3a3a50" }}>
-                  {format(new Date(note.createdAt), "MMMM d, yyyy")}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-8 mt-3 pb-6"
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+              {/* Date */}
+              <div className="flex items-center gap-2">
+                <span className="text-[12px]" style={{ color: "#3a3a50" }}>Created</span>
+                <span className="text-[12px]" style={{ color: "#6a6a7e" }}>
+                  {format(new Date(note.createdAt), "MMM d, yyyy")}
                 </span>
               </div>
+              {/* Updated */}
+              {note.updatedAt && (
+                <div className="flex items-center gap-2">
+                  <span className="text-[12px]" style={{ color: "#3a3a50" }}>Updated</span>
+                  <span className="text-[12px]" style={{ color: "#6a6a7e" }}>
+                    {format(new Date(note.updatedAt), "MMM d, h:mm a")}
+                  </span>
+                </div>
+              )}
+              {/* Links */}
               {note.linkedNoteIds?.length > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <svg
-                    width="11"
-                    height="11"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#7c7aff"
-                    strokeWidth="2"
-                  >
-                    <circle cx="18" cy="5" r="3" />
-                    <circle cx="6" cy="12" r="3" />
-                    <circle cx="18" cy="19" r="3" />
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                  </svg>
-                  <span className="text-[11px]" style={{ color: "#7c7aff" }}>
-                    {note.linkedNoteIds.length} linked note
-                    {note.linkedNoteIds.length !== 1 ? "s" : ""}
+                <div className="flex items-center gap-2">
+                  <span className="text-[12px]" style={{ color: "#3a3a50" }}>Links</span>
+                  <span className="text-[12px] font-medium" style={{ color: "#7c7aff" }}>
+                    {note.linkedNoteIds.length}
                   </span>
                 </div>
               )}
@@ -860,46 +817,37 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
             onInput={handleContentInput}
             onKeyDown={handleContentKeyDown}
             className="outline-none obsidian-content"
-            data-placeholder="Start writing... Use [[Note Title]] to link notes"
+            data-placeholder="Start writing... Use [[Note Title]] to link pages"
           />
 
           {/* Drawing preview */}
           {drawing && !showDraw && (
-            <div className="mt-8">
-              <div className="flex items-center justify-between mb-2">
-                <span
-                  className="text-[10px] font-medium"
-                  style={{ color: "#4a4a5e" }}
-                >
-                  Drawing
-                </span>
-                <div className="flex gap-2">
+            <div className="mt-10">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a4a5e" strokeWidth="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5" fill="#4a4a5e"/>
+                    <path d="M21 15l-5-5L5 21"/>
+                  </svg>
+                  <span className="text-[12px] font-medium" style={{ color: "#4a4a5e" }}>Drawing</span>
+                </div>
+                <div className="flex gap-3">
                   <button
                     onClick={() => setShowDraw(true)}
-                    className="text-[10px] transition-colors"
+                    className="text-[12px] font-medium transition-colors"
                     style={{ color: "#7c7aff" }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.color = "#a5a3ff")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.color = "#7c7aff")
-                    }
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "#a5a3ff")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "#7c7aff")}
                   >
                     Edit
                   </button>
                   <button
-                    onClick={() => {
-                      setDrawing(undefined);
-                      saveNote(title, content, undefined);
-                    }}
-                    className="text-[10px] transition-colors"
-                    style={{ color: "#f87171" }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.color = "#fca5a5")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.color = "#f87171")
-                    }
+                    onClick={() => { setDrawing(undefined); saveNote(title, content, undefined); }}
+                    className="text-[12px] transition-colors"
+                    style={{ color: "#6a6a7e" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "#f87171")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "#6a6a7e")}
                   >
                     Remove
                   </button>
@@ -909,7 +857,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
               <img
                 src={drawing}
                 alt="Note drawing"
-                className="w-full rounded-xl"
+                className="w-full rounded-xl cursor-pointer transition-all duration-200 hover:brightness-110"
                 style={{
                   border: "1px solid rgba(255,255,255,0.06)",
                   maxHeight: 400,
@@ -920,65 +868,43 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
             </div>
           )}
 
-          {/* Backlinks */}
+          {/* Backlinks — Notion-style linked mentions */}
           {backlinks.length > 0 && (
-            <div
-              className="mt-12 pt-6"
-              style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#4a4a5e"
-                  strokeWidth="2"
-                >
-                  <circle cx="18" cy="5" r="3" />
-                  <circle cx="6" cy="12" r="3" />
-                  <circle cx="18" cy="19" r="3" />
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            <div className="mt-16 pt-8" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+              <div className="flex items-center gap-2 mb-4">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a4a5e" strokeWidth="1.8">
+                  <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
                 </svg>
-                <span
-                  className="text-[11px] font-semibold"
-                  style={{ color: "#4a4a5e" }}
-                >
-                  Backlinks ({backlinks.length})
+                <span className="text-[13px] font-semibold" style={{ color: "#5a5a6e" }}>
+                  {backlinks.length} Backlink{backlinks.length !== 1 ? "s" : ""}
                 </span>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {backlinks.map((bl) => (
                   <button
                     key={bl.id}
                     onClick={() => setOpenNoteId(bl.id)}
-                    className="w-full text-left flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] transition-colors"
+                    className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-[13px] transition-all duration-150"
                     style={{
-                      background: "rgba(124,122,255,0.06)",
-                      color: "#a5a3ff",
+                      background: "rgba(255,255,255,0.02)",
+                      border: "1px solid rgba(255,255,255,0.04)",
+                      color: "#c8c8d8",
                     }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.background =
-                        "rgba(124,122,255,0.12)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.background =
-                        "rgba(124,122,255,0.06)")
-                    }
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "rgba(124,122,255,0.06)";
+                      e.currentTarget.style.borderColor = "rgba(124,122,255,0.15)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "rgba(255,255,255,0.02)";
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)";
+                    }}
                   >
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c7aff" strokeWidth="1.5">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                       <polyline points="14 2 14 8 20 8" />
                     </svg>
-                    {bl.title || "Untitled"}
+                    <span className="font-medium">{bl.title || "Untitled"}</span>
                   </button>
                 ))}
               </div>

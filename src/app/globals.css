@@ -4,14 +4,14 @@
 
 /*
   Premium Design System — NOUS
-  Inspired by: Linear, Vercel, Raycast
-  
+  Inspired by: Linear, Vercel, Notion, Obsidian
+
   Surface hierarchy (dark):
   bg       #0d0d12  — deepest layer, page background
   surface  #16161e  — cards, panels
   card     #1e1e28  — elevated cards
   border   rgba(255,255,255,0.07)
-  
+
   Never use pure black (#000). Never use pure white (#fff) for text.
 */
 
@@ -58,19 +58,19 @@ body {
   background: var(--nous-bg);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
 
 /* Hide scrollbars globally (keep scroll functionality) */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 
-  -moz-osx-font-smoothing: grayscale;
-  letter-spacing: -0.01em;
-}
-
 /* ─── Scrollbar ─── */
-::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--nous-tertiary); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
 
 /* ─── Glass morphism ─── */
 .glass {
@@ -128,104 +128,186 @@ body {
   content: attr(data-placeholder);
   color: #2e2e40;
   pointer-events: none;
+  font-style: italic;
 }
 
-/* ─── Obsidian editor content ─── */
+/* ════════════════════════════════════════════════════════════════════════════
+   Notion × Obsidian — Editor content styles
+   ════════════════════════════════════════════════════════════════════════════ */
+
 .obsidian-content {
-  font-size: 15px;
-  line-height: 1.75;
+  font-size: 16px;
+  line-height: 1.8;
   color: #c8c8d8;
   min-height: 300px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
+
+/* Headings — Notion-style clean typography */
 .obsidian-content h1 {
-  font-size: 28px; font-weight: 700; color: #e8e8f0;
-  letter-spacing: -0.02em; margin: 1.5em 0 0.5em; line-height: 1.2;
-  border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.3em;
+  font-size: 30px;
+  font-weight: 700;
+  color: #e8e8f0;
+  letter-spacing: -0.025em;
+  margin: 2em 0 0.6em;
+  line-height: 1.2;
+  padding-bottom: 0.4em;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 .obsidian-content h2 {
-  font-size: 22px; font-weight: 600; color: #e0e0ee;
-  letter-spacing: -0.01em; margin: 1.4em 0 0.4em; line-height: 1.3;
+  font-size: 24px;
+  font-weight: 600;
+  color: #e0e0ee;
+  letter-spacing: -0.02em;
+  margin: 1.6em 0 0.5em;
+  line-height: 1.3;
 }
 .obsidian-content h3 {
-  font-size: 17px; font-weight: 600; color: #d0d0e0;
-  margin: 1.2em 0 0.3em;
+  font-size: 18px;
+  font-weight: 600;
+  color: #d0d0e0;
+  letter-spacing: -0.01em;
+  margin: 1.4em 0 0.4em;
+  line-height: 1.4;
 }
-.obsidian-content p { margin: 0.6em 0; }
-.obsidian-content strong { color: #e8e8f0; font-weight: 600; }
-.obsidian-content em { color: #a5a3ff; font-style: italic; }
-.obsidian-content a { color: #7c7aff; text-decoration: underline; text-underline-offset: 2px; }
+
+/* Paragraphs */
+.obsidian-content p {
+  margin: 0.5em 0;
+}
+
+/* Inline text */
+.obsidian-content strong {
+  color: #e8e8f0;
+  font-weight: 600;
+}
+.obsidian-content em {
+  color: #b0aeff;
+  font-style: italic;
+}
+.obsidian-content s {
+  color: #5a5a6e;
+  text-decoration: line-through;
+}
+.obsidian-content a {
+  color: #7c7aff;
+  text-decoration: underline;
+  text-decoration-color: rgba(124,122,255,0.3);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s;
+}
+.obsidian-content a:hover {
+  text-decoration-color: #7c7aff;
+}
+
+/* Lists — refined spacing */
 .obsidian-content ul, .obsidian-content ol {
-  padding-left: 1.5em; margin: 0.6em 0;
+  padding-left: 1.6em;
+  margin: 0.6em 0;
 }
-.obsidian-content li { margin: 0.25em 0; }
-.obsidian-content ul li::marker { color: #7c7aff; }
-.obsidian-content ol li::marker { color: #7c7aff; }
+.obsidian-content li {
+  margin: 0.35em 0;
+  padding-left: 0.2em;
+}
+.obsidian-content ul li::marker {
+  color: #7c7aff;
+  font-size: 0.7em;
+}
+.obsidian-content ol li::marker {
+  color: #7c7aff;
+  font-weight: 500;
+}
+
+/* Inline code */
 .obsidian-content code {
-  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-  font-size: 13px;
-  background: rgba(124,122,255,0.08);
-  border: 1px solid rgba(124,122,255,0.15);
-  border-radius: 4px;
-  padding: 1px 6px;
-  color: #a5a3ff;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+  font-size: 0.875em;
+  background: rgba(124,122,255,0.07);
+  border: 1px solid rgba(124,122,255,0.12);
+  border-radius: 5px;
+  padding: 2px 7px;
+  color: #b0aeff;
 }
+
+/* Pre/code blocks */
 .obsidian-content pre {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.025);
   border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 10px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 18px 20px;
   overflow-x: auto;
-  margin: 1em 0;
+  margin: 1.2em 0;
 }
 .obsidian-content pre code {
-  background: none; border: none; padding: 0; color: #c8c8d8;
+  background: none;
+  border: none;
+  padding: 0;
+  color: #c8c8d8;
+  font-size: 13px;
+  line-height: 1.7;
 }
+
+/* Blockquote — Notion-style */
 .obsidian-content blockquote {
   border-left: 3px solid #7c7aff;
-  padding: 4px 16px;
-  margin: 1em 0;
-  color: #7a7a8c;
+  padding: 8px 20px;
+  margin: 1.2em 0;
+  color: #8a8a9c;
   font-style: italic;
-  background: rgba(124,122,255,0.04);
-  border-radius: 0 8px 8px 0;
+  background: rgba(124,122,255,0.03);
+  border-radius: 0 10px 10px 0;
 }
+
+/* Horizontal rule */
+.obsidian-content hr {
+  border: none;
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+  margin: 2em 0;
+}
+
 /* Wiki-link style [[...]] */
 .obsidian-content .wiki-link {
   color: #7c7aff;
   background: rgba(124,122,255,0.08);
   border-radius: 4px;
-  padding: 0 4px;
+  padding: 1px 5px;
   cursor: pointer;
+  transition: background 0.15s;
+}
+.obsidian-content .wiki-link:hover {
+  background: rgba(124,122,255,0.15);
 }
 
-/* Inline code block inserted by toolbar */
+/* ─── Code block inserted by toolbar ─── */
 .note-code-block {
   display: block;
-  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', Menlo, Monaco, Consolas, monospace;
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Fira Mono', Menlo, Monaco, Consolas, monospace;
   font-size: 13px;
   line-height: 1.7;
-  color: #30c48d;
-  background: rgba(48, 196, 141, 0.06);
-  border: 1px solid rgba(48, 196, 141, 0.15);
+  color: #c8c8d8;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.06);
   border-left: 3px solid #30c48d;
-  border-radius: 6px;
-  padding: 12px 16px;
-  margin: 12px 0;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 16px 0;
   white-space: pre-wrap;
   word-break: break-all;
   outline: none;
   tab-size: 2;
 }
 .note-code-block:focus {
-  border-color: rgba(48, 196, 141, 0.4);
-  background: rgba(48, 196, 141, 0.09);
-  box-shadow: 0 0 0 3px rgba(48, 196, 141, 0.08);
+  border-color: rgba(48, 196, 141, 0.35);
+  background: rgba(48, 196, 141, 0.04);
+  box-shadow: 0 0 0 3px rgba(48, 196, 141, 0.06);
 }
 
-/* Placeholder for contentEditable */
+/* ─── Placeholder for contentEditable ─── */
 [data-placeholder]:empty::before {
   content: attr(data-placeholder);
   color: #2e2e40;
   pointer-events: none;
+  font-style: italic;
 }
-

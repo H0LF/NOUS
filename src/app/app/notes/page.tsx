@@ -36,7 +36,6 @@ export default function NotesPage() {
           const { eventId, eventTitle, isClass, classType } =
             JSON.parse(pendingStr);
 
-          // ── 1. Find or create a folder named after the event ──
           const existingFolders = await queryDocs<Folder>(
             "folders",
             where("name", "==", eventTitle),
@@ -64,9 +63,6 @@ export default function NotesPage() {
             });
           }
 
-          // ── 2. Build note title ──
-          // For class events: "Teórica 1", "Teórica 2", etc. based on existing notes for this event
-          // For non-class events: use the event title directly
           let title = eventTitle;
           if (isClass && classType) {
             const existingNotes = await queryDocs<Note>(
@@ -79,7 +75,6 @@ export default function NotesPage() {
             title = `${classType} ${sameTypeNotes.length + 1}`;
           }
 
-          // ── 3. Create the note inside the folder ──
           const id = uuidv4();
           await saveDoc("notes", id, {
             id,
@@ -93,7 +88,6 @@ export default function NotesPage() {
             updatedAt: new Date().toISOString(),
           });
 
-          // Navigate to the new note and select its folder
           setOpenNoteId(id);
           setMobilePanel("editor");
         } catch (e) {
@@ -120,66 +114,52 @@ export default function NotesPage() {
     >
       {/* ══ DESKTOP LAYOUT ══ */}
       <div className="hidden md:flex w-full h-full">
-        {/* Panel 1: File Explorer (Obsidian-style unified sidebar) */}
+        {/* Sidebar */}
         <div
-          className="w-[240px] shrink-0"
-          style={{ borderRight: "1px solid rgba(255,255,255,0.04)" }}
+          className="w-[260px] shrink-0"
+          style={{ borderRight: "1px solid rgba(255,255,255,0.05)" }}
         >
           <FileExplorer className="h-full" onNotesChange={handleNotesChange} />
         </div>
 
-        {/* Panel 2: Editor */}
+        {/* Editor */}
         <div className="flex-1 min-w-0">
           <NoteEditor className="h-full" />
         </div>
 
-        {/* Panel 4: Neural Graph (toggleable) */}
+        {/* Neural Graph (toggleable) */}
         {showGraph && (
           <div
-            className="w-[280px] shrink-0 flex flex-col"
-            style={{ borderLeft: "1px solid rgba(255,255,255,0.04)" }}
+            className="w-[300px] shrink-0 flex flex-col"
+            style={{ borderLeft: "1px solid rgba(255,255,255,0.05)" }}
           >
             <div
-              className="flex items-center justify-between px-3 py-2.5 shrink-0"
+              className="flex items-center justify-between px-4 py-3 shrink-0"
               style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
             >
-              <div className="flex items-center gap-1.5">
-                <svg
-                  width="11"
-                  height="11"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#7c7aff"
-                  strokeWidth="2"
-                >
-                  <circle cx="18" cy="5" r="3" />
-                  <circle cx="6" cy="12" r="3" />
-                  <circle cx="18" cy="19" r="3" />
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                </svg>
-                <span
-                  className="text-[10px] font-semibold tracking-wide"
-                  style={{ color: "#7c7aff" }}
-                >
-                  Neural Graph
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded-md flex items-center justify-center"
+                  style={{ background: "rgba(124,122,255,0.1)" }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7c7aff" strokeWidth="2.5">
+                    <circle cx="18" cy="5" r="2.5" />
+                    <circle cx="6" cy="12" r="2.5" />
+                    <circle cx="18" cy="19" r="2.5" />
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                  </svg>
+                </div>
+                <span className="text-[12px] font-semibold" style={{ color: "#7a7a8c" }}>
+                  Graph
                 </span>
               </div>
               <button
                 onClick={() => setShowGraph(false)}
-                className="w-5 h-5 flex items-center justify-center rounded transition-colors"
+                className="w-6 h-6 flex items-center justify-center rounded-md transition-all duration-150"
                 style={{ color: "#3a3a50" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "#e8e8f0")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#3a3a50")}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#e8e8f0"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "#3a3a50"; e.currentTarget.style.background = "transparent"; }}
               >
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -194,15 +174,11 @@ export default function NotesPage() {
               />
             </div>
             <div
-              className="px-3 py-2 shrink-0"
+              className="px-4 py-2.5 shrink-0 flex items-center justify-center"
               style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
             >
-              <p
-                className="text-[9px] text-center"
-                style={{ color: "#2e2e40" }}
-              >
-                {allNotes.length} note{allNotes.length !== 1 ? "s" : ""} · Click
-                node to open · Drag to explore
+              <p className="text-[10px]" style={{ color: "#2e2e40" }}>
+                {allNotes.length} page{allNotes.length !== 1 ? "s" : ""} connected
               </p>
             </div>
           </div>
@@ -212,24 +188,17 @@ export default function NotesPage() {
         {!showGraph && (
           <button
             onClick={() => setShowGraph(true)}
-            className="w-8 shrink-0 flex flex-col items-center justify-center gap-2 transition-colors"
+            className="w-10 shrink-0 flex flex-col items-center justify-center gap-2 transition-all duration-200"
             style={{
               background: "#0e0e14",
-              borderLeft: "1px solid rgba(255,255,255,0.04)",
+              borderLeft: "1px solid rgba(255,255,255,0.05)",
               color: "#3a3a50",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#7c7aff")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#3a3a50")}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "#7c7aff"; e.currentTarget.style.background = "rgba(124,122,255,0.04)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "#3a3a50"; e.currentTarget.style.background = "#0e0e14"; }}
             title="Show Graph"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="18" cy="5" r="3" />
               <circle cx="6" cy="12" r="3" />
               <circle cx="18" cy="19" r="3" />
@@ -242,25 +211,43 @@ export default function NotesPage() {
 
       {/* ══ MOBILE LAYOUT ══ */}
       <div className="md:hidden flex flex-col w-full h-full">
-        {/* Mobile tab bar */}
+        {/* Mobile tab bar — cleaner design */}
         <div
           className="flex shrink-0"
           style={{
-            background: "#0e0e14",
+            background: "#111118",
             borderBottom: "1px solid rgba(255,255,255,0.05)",
           }}
         >
           {(
             [
-              { key: "list", label: "Notes" },
-              { key: "editor", label: "Editor" },
-              { key: "graph", label: "Graph" },
-            ] as { key: Panel; label: string }[]
-          ).map(({ key, label }) => (
+              { key: "list", label: "Pages", icon: (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              )},
+              { key: "editor", label: "Editor", icon: (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              )},
+              { key: "graph", label: "Graph", icon: (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <circle cx="18" cy="5" r="3"/>
+                  <circle cx="6" cy="12" r="3"/>
+                  <circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+              )},
+            ] as { key: Panel; label: string; icon: React.ReactNode }[]
+          ).map(({ key, label, icon }) => (
             <button
               key={key}
               onClick={() => setMobilePanel(key)}
-              className="flex-1 py-3 text-[11px] font-medium transition-colors"
+              className="flex-1 flex flex-col items-center gap-1 py-3 transition-all duration-150"
               style={{
                 color: mobilePanel === key ? "#7c7aff" : "#3a3a50",
                 borderBottom:
@@ -269,7 +256,8 @@ export default function NotesPage() {
                     : "2px solid transparent",
               }}
             >
-              {label}
+              {icon}
+              <span className="text-[10px] font-medium">{label}</span>
             </button>
           ))}
         </div>
