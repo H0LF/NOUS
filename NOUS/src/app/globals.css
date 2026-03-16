@@ -1,0 +1,231 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Premium Design System — NOUS
+  Inspired by: Linear, Vercel, Raycast
+  
+  Surface hierarchy (dark):
+  bg       #0d0d12  — deepest layer, page background
+  surface  #16161e  — cards, panels
+  card     #1e1e28  — elevated cards
+  border   rgba(255,255,255,0.07)
+  
+  Never use pure black (#000). Never use pure white (#fff) for text.
+*/
+
+:root {
+  /* Light mode */
+  --nous-bg:        #f0f0f5;
+  --nous-surface:   #ffffff;
+  --nous-card:      #f7f7fb;
+  --nous-border:    rgba(0,0,0,0.07);
+  --nous-accent:    #5e5ce6;
+  --nous-accent2:   #30c48d;
+  --nous-primary:   #1a1a2e;
+  --nous-secondary: #6e6e80;
+  --nous-tertiary:  #c4c4d0;
+  --nous-success:   #30c48d;
+  --nous-warning:   #f59e0b;
+  --nous-error:     #ef4444;
+}
+
+html.dark {
+  /* Premium deep charcoal — NOT pure black */
+  --nous-bg:        #0d0d12;
+  --nous-surface:   #16161e;
+  --nous-card:      #1e1e28;
+  --nous-border:    rgba(255,255,255,0.07);
+  --nous-accent:    #7c7aff;
+  --nous-accent2:   #30c48d;
+  --nous-primary:   #e8e8f0;
+  --nous-secondary: #7a7a8c;
+  --nous-tertiary:  #2e2e3e;
+  --nous-success:   #30c48d;
+  --nous-warning:   #f59e0b;
+  --nous-error:     #f87171;
+}
+
+/* ─── Base ─── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { height: 100%; }
+
+body {
+  height: 100%;
+  color: var(--nous-primary);
+  background: var(--nous-bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+
+/* Hide scrollbars globally (keep scroll functionality) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--nous-tertiary); border-radius: 2px; }
+
+/* ─── Glass morphism ─── */
+.glass {
+  background: rgba(22, 22, 30, 0.85);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* ─── Gradient text ─── */
+.gradient-text {
+  background: linear-gradient(135deg, #7c7aff 0%, #a78bfa 50%, #30c48d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Animations ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-6px) rotate(0.8deg); }
+  66%       { transform: translateY(-3px) rotate(-0.8deg); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(124,122,255,0.25); }
+  50%       { box-shadow: 0 0 36px rgba(124,122,255,0.5); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-fadeUp    { animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards; }
+.animate-fadeIn    { animation: fadeIn 0.35s ease forwards; }
+.animate-float     { animation: float 7s ease-in-out infinite; }
+.animate-pulseGlow { animation: pulse-glow 3s ease-in-out infinite; }
+
+/* ─── Stagger ─── */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 50ms; }
+.stagger > *:nth-child(3) { animation-delay: 100ms; }
+.stagger > *:nth-child(4) { animation-delay: 150ms; }
+.stagger > *:nth-child(5) { animation-delay: 200ms; }
+
+/* ─── ContentEditable placeholder ─── */
+[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #2e2e40;
+  pointer-events: none;
+}
+
+/* ─── Obsidian editor content ─── */
+.obsidian-content {
+  font-size: 15px;
+  line-height: 1.75;
+  color: #c8c8d8;
+  min-height: 300px;
+}
+.obsidian-content h1 {
+  font-size: 28px; font-weight: 700; color: #e8e8f0;
+  letter-spacing: -0.02em; margin: 1.5em 0 0.5em; line-height: 1.2;
+  border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.3em;
+}
+.obsidian-content h2 {
+  font-size: 22px; font-weight: 600; color: #e0e0ee;
+  letter-spacing: -0.01em; margin: 1.4em 0 0.4em; line-height: 1.3;
+}
+.obsidian-content h3 {
+  font-size: 17px; font-weight: 600; color: #d0d0e0;
+  margin: 1.2em 0 0.3em;
+}
+.obsidian-content p { margin: 0.6em 0; }
+.obsidian-content strong { color: #e8e8f0; font-weight: 600; }
+.obsidian-content em { color: #a5a3ff; font-style: italic; }
+.obsidian-content a { color: #7c7aff; text-decoration: underline; text-underline-offset: 2px; }
+.obsidian-content ul, .obsidian-content ol {
+  padding-left: 1.5em; margin: 0.6em 0;
+}
+.obsidian-content li { margin: 0.25em 0; }
+.obsidian-content ul li::marker { color: #7c7aff; }
+.obsidian-content ol li::marker { color: #7c7aff; }
+.obsidian-content code {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 13px;
+  background: rgba(124,122,255,0.08);
+  border: 1px solid rgba(124,122,255,0.15);
+  border-radius: 4px;
+  padding: 1px 6px;
+  color: #a5a3ff;
+}
+.obsidian-content pre {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 16px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+.obsidian-content pre code {
+  background: none; border: none; padding: 0; color: #c8c8d8;
+}
+.obsidian-content blockquote {
+  border-left: 3px solid #7c7aff;
+  padding: 4px 16px;
+  margin: 1em 0;
+  color: #7a7a8c;
+  font-style: italic;
+  background: rgba(124,122,255,0.04);
+  border-radius: 0 8px 8px 0;
+}
+/* Wiki-link style [[...]] */
+.obsidian-content .wiki-link {
+  color: #7c7aff;
+  background: rgba(124,122,255,0.08);
+  border-radius: 4px;
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+/* Inline code block inserted by toolbar */
+.note-code-block {
+  display: block;
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #30c48d;
+  background: rgba(48, 196, 141, 0.06);
+  border: 1px solid rgba(48, 196, 141, 0.15);
+  border-left: 3px solid #30c48d;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 12px 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  outline: none;
+  tab-size: 2;
+}
+.note-code-block:focus {
+  border-color: rgba(48, 196, 141, 0.4);
+  background: rgba(48, 196, 141, 0.09);
+  box-shadow: 0 0 0 3px rgba(48, 196, 141, 0.08);
+}
+
+/* Placeholder for contentEditable */
+[data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #2e2e40;
+  pointer-events: none;
+}
+
