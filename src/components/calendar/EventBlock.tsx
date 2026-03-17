@@ -9,6 +9,10 @@ interface EventBlockProps {
   onDoubleClick: (e: React.MouseEvent) => void;
 }
 
+function normalizeClassType(ct: string): string {
+  return ct;
+}
+
 export const EventBlock = ({ event, onClick, onDoubleClick }: EventBlockProps) => {
   const { fg, sub } = getEventColors(event.color);
 
@@ -30,7 +34,7 @@ export const EventBlock = ({ event, onClick, onDoubleClick }: EventBlockProps) =
       </div>
       {event.classType && (
         <div className="text-[9px] font-medium uppercase tracking-wide mt-0.5" style={{ color: sub }}>
-          {event.classType}
+          {normalizeClassType(event.classType)}
         </div>
       )}
       <div className="text-[9px] mt-0.5 flex items-center gap-1" style={{ color: sub }}>

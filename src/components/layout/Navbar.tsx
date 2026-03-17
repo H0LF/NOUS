@@ -46,11 +46,11 @@ const icons = {
 };
 
 const navItems = [
-  { href: "/app/calendar", label: "Agenda",  icon: icons.calendar },
-  { href: "/app/notes",    label: "Notas",   icon: icons.notes    },
-  { href: "/app/gym",      label: "Gym",     icon: icons.gym      },
-  { href: "/app/food",     label: "Food",    icon: icons.food     },
-  { href: "/app/settings", label: "Perfil",  icon: icons.profile  },
+  { href: "/app/calendar", label: "Calendar", icon: icons.calendar },
+  { href: "/app/notes",    label: "Notes",    icon: icons.notes    },
+  { href: "/app/gym",      label: "Gym",      icon: icons.gym      },
+  { href: "/app/food",     label: "Food",     icon: icons.food     },
+  { href: "/app/settings", label: "Profile",  icon: icons.profile  },
 ];
 
 export const Navbar = () => {

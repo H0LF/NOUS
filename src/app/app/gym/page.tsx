@@ -3,15 +3,16 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useStore } from "@/store";
 import { useFirestore } from "@/hooks/useFirestore";
-import { WorkoutSelector } from "@/components/gym/WorkoutSelector";
 import { ExerciseCard } from "@/components/gym/ExerciseCard";
 import { WorkoutHistory } from "@/components/gym/WorkoutHistory";
+import { WorkoutPlans } from "@/components/gym/WorkoutPlans";
 import { RestTimer } from "@/components/gym/RestTimer";
 import { WorkoutSummary } from "@/components/gym/WorkoutSummary";
+import { ExercisePicker } from "@/components/gym/ExercisePicker";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
-import { Input } from "@/components/ui/Input";
-import { GymSession, ExerciseEntry } from "@/types";
+import { GymSession, ExerciseEntry, SetEntry, TemplateExercise } from "@/types";
+import { ExerciseInfo } from "@/lib/exercises";
+import { orderBy, limit } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 import toast from "react-hot-toast";
 
@@ -26,15 +27,13 @@ export default function GymPage() {
     stopRestTimer,
     user,
   } = useStore();
-  const { saveDoc } = useFirestore();
-  const [tab, setTab] = useState<"workout" | "history">("workout");
-  const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
+  const { saveDoc, queryDocs } = useFirestore();
+  const [tab, setTab] = useState<"plans" | "history">("plans");
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [newExerciseName, setNewExerciseName] = useState("");
 
-  // Stable stopwatch using ref — no drift, no re-render dependency
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -60,36 +59,103 @@ export default function GymPage() {
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
-  const handleStartWorkout = (type: string) => {
-    setActiveWorkoutType(type);
-    setStopwatchSeconds(0);
-    setTab("workout");
+  const recentSessionsRef = useRef<GymSession[] | null>(null);
+
+  const handleAddExercise = async (info: ExerciseInfo) => {
+    if (recentSessionsRef.current === null) {
+      try {
+        recentSessionsRef.current = await queryDocs<GymSession>(
+          "gym_sessions",
+          orderBy("date", "desc"),
+          limit(20),
+        );
+      } catch {
+        recentSessionsRef.current = [];
+      }
+    }
+
+    let previousSets: SetEntry[] | undefined;
+    for (const session of recentSessionsRef.current) {
+      const match = session.exercises.find((e) => e.name === info.name);
+      if (match) {
+        previousSets = match.sets.filter((s) => s.completed);
+        break;
+      }
+    }
+
+    const lastSet = previousSets?.[0];
+    const newEx: ExerciseEntry = {
+      name: info.name,
+      sets: [{ weight: lastSet?.weight ?? 0, reps: lastSet?.reps ?? 10, completed: false }],
+      previousSets,
+    };
+
+    setExercises([...exercises, newEx]);
+    if (!activeWorkoutType) {
+      setActiveWorkoutType("Workout");
+      setStopwatchSeconds(0);
+    }
+  };
+
+  const handleLoadPlan = async (templateExercises: TemplateExercise[]) => {
+    if (recentSessionsRef.current === null) {
+      try {
+        recentSessionsRef.current = await queryDocs<GymSession>(
+          "gym_sessions",
+          orderBy("date", "desc"),
+          limit(20),
+        );
+      } catch {
+        recentSessionsRef.current = [];
+      }
+    }
+
+    const newExercises: ExerciseEntry[] = templateExercises.map(ex => {
+      let previousSets: SetEntry[] | undefined;
+      for (const session of recentSessionsRef.current!) {
+        const match = session.exercises.find(e => e.name === ex.name);
+        if (match) { previousSets = match.sets.filter(s => s.completed); break; }
+      }
+      const lastSet = previousSets?.[0];
+      return {
+        name: ex.name,
+        sets: Array.from({ length: ex.sets }, () => ({
+          weight: lastSet?.weight ?? ex.weight,
+          reps: lastSet?.reps ?? ex.reps,
+          completed: false,
+        })),
+        previousSets,
+      };
+    });
+
+    setExercises([...exercises, ...newExercises]);
+    if (!activeWorkoutType) {
+      setActiveWorkoutType("Workout");
+      setStopwatchSeconds(0);
+    }
   };
 
   const handleFinishWorkout = async () => {
-    if (!user || !activeWorkoutType) return;
+    if (!user) return;
     setIsSaving(true);
-
     const id = uuidv4();
     const session: GymSession = {
       id,
       userId: user.uid,
       date: new Date().toISOString(),
-      workoutType: activeWorkoutType,
+      workoutType: activeWorkoutType || "Workout",
       duration: stopwatchSeconds,
-      exercises,
+      exercises: exercises.map(({ previousSets: _prev, ...rest }) => rest),
     };
-
     await saveDoc("gym_sessions", id, session);
     toast.success("Workout saved!");
-
-    // Reset
     setActiveWorkoutType(null);
     setExercises([]);
     setStopwatchSeconds(0);
     stopRestTimer();
     setIsSummaryOpen(false);
     setIsSaving(false);
+    recentSessionsRef.current = null;
   };
 
   const cancelWorkout = () => {
@@ -98,6 +164,7 @@ export default function GymPage() {
     setStopwatchSeconds(0);
     stopRestTimer();
     setIsCancelOpen(false);
+    recentSessionsRef.current = null;
   };
 
   const handleUpdateExercise = (index: number, updated: ExerciseEntry) => {
@@ -107,64 +174,102 @@ export default function GymPage() {
   };
 
   const handleRemoveExercise = (index: number) => {
-    setExercises(exercises.filter((_, i) => i !== index));
+    const updated = exercises.filter((_, i) => i !== index);
+    setExercises(updated);
+    if (updated.length === 0 && activeWorkoutType) {
+      setActiveWorkoutType(null);
+      setStopwatchSeconds(0);
+      stopRestTimer();
+    }
   };
 
-  const handleAddExercise = () => {
-    if (!newExerciseName.trim()) return;
-
-    const newEx: ExerciseEntry = {
-      name: newExerciseName.trim(),
-      sets: [{ weight: 0, reps: 10, completed: false }],
-    };
-
-    setExercises([...exercises, newEx]);
-    setNewExerciseName("");
-    setIsAddExerciseOpen(false);
-  };
+  const addedNames = exercises.map((e) => e.name);
 
   return (
-    <div className="flex flex-col h-full space-y-4 max-w-2xl mx-auto w-full px-4 pt-12">
-      <div className="flex items-center justify-between pb-2">
+    <div className="flex flex-col h-full max-w-2xl mx-auto w-full px-4 pt-12 pb-20 overflow-y-auto custom-scrollbar">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2 mb-4">
         <div>
           <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-nous-secondary">
             Training
           </p>
           <h1
             className="text-[32px] font-bold text-nous-primary mt-0.5"
-            style={{
-              fontStyle: "italic",
-              letterSpacing: "-0.03em",
-              lineHeight: 1.1,
-            }}
+            style={{ fontStyle: "italic", letterSpacing: "-0.03em", lineHeight: 1.1 }}
           >
             Gym
           </h1>
         </div>
-
         {activeWorkoutType && (
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-nous-surface/50 border border-nous-border rounded-full px-3.5 py-1.5">
-              <div className="w-2 h-2 rounded-full bg-nous-accent animate-pulse" />
-              <span className="font-mono text-sm font-semibold text-nous-accent">
-                {formatTime(stopwatchSeconds)}
-              </span>
-            </div>
+          <div className="flex items-center gap-2 bg-nous-surface/50 border border-nous-border rounded-full px-3.5 py-1.5">
+            <div className="w-2 h-2 rounded-full bg-nous-accent animate-pulse" />
+            <span className="font-mono text-sm font-semibold text-nous-accent">
+              {formatTime(stopwatchSeconds)}
+            </span>
           </div>
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="flex p-1 bg-nous-surface rounded-xl">
+      {/* Active workout section — always visible when workout is in progress */}
+      {exercises.length > 0 && (
+        <div className="space-y-3 mb-5 animate-fadeIn">
+          {/* Workout sub-header */}
+          <div
+            className="rounded-xl px-4 py-3 flex items-center justify-between"
+            style={{ background: "var(--nous-surface)", border: "1px solid var(--nous-border)" }}
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full" style={{ background: "#30c48d" }} />
+              <span className="text-xs font-semibold text-nous-secondary uppercase tracking-wider">
+                {exercises.length} exercise{exercises.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsCancelOpen(true)}
+                className="text-xs text-red-400 hover:text-red-300 transition-colors font-medium"
+              >
+                Clear
+              </button>
+              <Button size="sm" variant="primary" onClick={() => setIsSummaryOpen(true)}>
+                Finish
+              </Button>
+            </div>
+          </div>
+
+          <RestTimer />
+
+          {exercises.map((ex, i) => (
+            <ExerciseCard
+              key={`${ex.name}-${i}`}
+              exercise={ex}
+              exerciseIndex={i}
+              onUpdate={(u) => handleUpdateExercise(i, u)}
+              onRemove={() => handleRemoveExercise(i)}
+            />
+          ))}
+
+          <Button
+            variant="secondary"
+            onClick={() => setIsPickerOpen(true)}
+            className="w-full border-dashed"
+          >
+            + Add Exercise
+          </Button>
+        </div>
+      )}
+
+      {/* Tabs — Plans & History */}
+      <div className="flex p-1 bg-nous-surface rounded-xl mb-4">
         <button
-          onClick={() => setTab("workout")}
+          onClick={() => setTab("plans")}
           className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-all ${
-            tab === "workout"
+            tab === "plans"
               ? "bg-nous-bg text-nous-accent shadow-sm"
               : "text-nous-secondary hover:text-nous-primary"
           }`}
         >
-          Current Workout
+          Plans
         </button>
         <button
           onClick={() => setTab("history")}
@@ -178,122 +283,41 @@ export default function GymPage() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar pb-20">
-        {tab === "workout" && (
-          <>
-            {!activeWorkoutType ? (
-              <WorkoutSelector onSelect={handleStartWorkout} />
-            ) : (
-              <div className="space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-nous-primary">
-                    {activeWorkoutType} Workout
-                  </h2>
-                  <button
-                    onClick={() => setIsCancelOpen(true)}
-                    className="text-xs text-red-400 hover:text-red-300 transition-colors font-medium"
-                  >
-                    Cancel
-                  </button>
-                </div>
+      {tab === "plans" && <WorkoutPlans onLoadPlan={handleLoadPlan} />}
+      {tab === "history" && <WorkoutHistory />}
 
-                {/* Rest Timer */}
-                <RestTimer />
+      {/* Exercise Picker */}
+      <ExercisePicker
+        isOpen={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        onSelect={(info) => { handleAddExercise(info); }}
+        addedExercises={addedNames}
+      />
 
-                {exercises.map((ex) => (
-                  <ExerciseCard
-                    key={ex.name}
-                    exercise={ex}
-                    exerciseIndex={exercises.indexOf(ex)}
-                    onUpdate={(u) =>
-                      handleUpdateExercise(exercises.indexOf(ex), u)
-                    }
-                    onRemove={() =>
-                      handleRemoveExercise(exercises.indexOf(ex))
-                    }
-                  />
-                ))}
-
-                <div className="flex flex-col gap-3">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setIsAddExerciseOpen(true)}
-                    className="w-full border-dashed"
-                  >
-                    + Add Exercise
-                  </Button>
-
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    onClick={() => setIsSummaryOpen(true)}
-                    className="w-full shadow-lg shadow-nous-accent/30 mt-4"
-                  >
-                    Finish Workout
-                  </Button>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {tab === "history" && <WorkoutHistory />}
-      </div>
-
-      {/* Add Exercise Modal */}
-      <Modal
-        isOpen={isAddExerciseOpen}
-        onClose={() => setIsAddExerciseOpen(false)}
-        title="Add Exercise"
-      >
-        <div className="space-y-4">
-          <Input
-            label="Exercise Name"
-            value={newExerciseName}
-            onChange={(e) => setNewExerciseName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAddExercise()}
-            placeholder="e.g. Leg Extension"
-            autoFocus
-          />
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              variant="ghost"
-              onClick={() => setIsAddExerciseOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleAddExercise}>Add</Button>
+      {/* Cancel Confirmation */}
+      {isCancelOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsCancelOpen(false)} />
+          <div
+            className="relative rounded-2xl p-6 max-w-sm w-full mx-4 animate-fadeUp"
+            style={{ background: "var(--nous-surface)", border: "1px solid var(--nous-border)" }}
+          >
+            <h3 className="text-lg font-bold text-nous-primary mb-2">Clear workout?</h3>
+            <p className="text-sm text-nous-secondary mb-6">All exercises and progress will be lost.</p>
+            <div className="flex gap-3">
+              <Button variant="ghost" onClick={() => setIsCancelOpen(false)} className="flex-1">Keep</Button>
+              <Button variant="danger" onClick={cancelWorkout} className="flex-1">Clear All</Button>
+            </div>
           </div>
         </div>
-      </Modal>
-
-      {/* Cancel Confirmation Modal */}
-      <Modal
-        isOpen={isCancelOpen}
-        onClose={() => setIsCancelOpen(false)}
-        title="Cancel Workout?"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-nous-secondary">
-            Current progress will be lost. This can&apos;t be undone.
-          </p>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="ghost" onClick={() => setIsCancelOpen(false)}>
-              Keep Training
-            </Button>
-            <Button variant="danger" onClick={cancelWorkout}>
-              Discard Workout
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      )}
 
       {/* Workout Summary Modal */}
       <WorkoutSummary
         isOpen={isSummaryOpen}
         onClose={() => setIsSummaryOpen(false)}
         onConfirm={handleFinishWorkout}
-        workoutType={activeWorkoutType || ""}
+        workoutType={activeWorkoutType || "Workout"}
         duration={stopwatchSeconds}
         exercises={exercises}
         loading={isSaving}

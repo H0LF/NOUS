@@ -121,17 +121,17 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
   return (
     <div
       className="absolute inset-0 z-50 flex flex-col"
-      style={{ background: "#0f0f15" }}
+      style={{ background: "var(--nous-bg)" }}
     >
       {/* Draw toolbar */}
       <div
         className="flex items-center gap-3 px-5 py-3 shrink-0 flex-wrap"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ background: "var(--nous-surface)", borderBottom: "1px solid var(--nous-border)" }}
       >
         {/* Tool toggle */}
         <div
           className="flex rounded-lg overflow-hidden"
-          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ border: "1px solid var(--nous-border)" }}
         >
           {(["pen", "eraser"] as const).map((t) => (
             <button
@@ -141,7 +141,7 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
               style={{
                 background:
                   tool === t ? "rgba(124,122,255,0.15)" : "transparent",
-                color: tool === t ? "#7c7aff" : "#6a6a7e",
+                color: tool === t ? "#7c7aff" : "var(--nous-secondary)",
               }}
             >
               {t === "pen" ? "Pen" : "Eraser"}
@@ -163,11 +163,11 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
                 background: c,
                 border:
                   color === c && tool === "pen"
-                    ? "2px solid #fff"
-                    : "2px solid rgba(255,255,255,0.1)",
+                    ? "2px solid var(--nous-accent)"
+                    : "2px solid var(--nous-border)",
                 boxShadow:
                   color === c && tool === "pen"
-                    ? "0 0 8px rgba(255,255,255,0.3)"
+                    ? "0 0 8px rgba(124,122,255,0.4)"
                     : "none",
               }}
             />
@@ -191,7 +191,7 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
                 style={{
                   width: Math.min(s * 2, 18),
                   height: Math.min(s * 2, 18),
-                  background: size === s ? "#7c7aff" : "#4a4a5e",
+                  background: size === s ? "#7c7aff" : "var(--nous-tertiary)",
                 }}
               />
             </button>
@@ -220,14 +220,14 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
           onClick={save}
           className="px-4 py-2 text-[12px] font-semibold rounded-lg transition-all duration-150"
           style={{
-            background: "#7c7aff",
+            background: "var(--nous-accent)",
             color: "#fff",
           }}
           onMouseEnter={(e) =>
-            (e.currentTarget.style.background = "#6b69e6")
+            (e.currentTarget.style.opacity = "0.85")
           }
           onMouseLeave={(e) =>
-            (e.currentTarget.style.background = "#7c7aff")
+            (e.currentTarget.style.opacity = "1")
           }
         >
           Save
@@ -236,11 +236,11 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
           onClick={onClose}
           className="px-4 py-2 text-[12px] rounded-lg transition-all duration-150"
           style={{
-            color: "#6a6a7e",
-            border: "1px solid rgba(255,255,255,0.06)",
+            color: "var(--nous-secondary)",
+            border: "1px solid var(--nous-border)",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#e8e8f0")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "#6a6a7e")}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--nous-primary)")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--nous-secondary)")}
         >
           Cancel
         </button>
@@ -282,8 +282,10 @@ const extractLinkedNoteIds = (
 };
 
 export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
-  const { openNoteId, setOpenNoteId, user } = useStore();
-  const { getDocById, saveDoc, subscribeCollection } = useFirestore();
+  // Read shared data from the store (populated by useAppData in the layout).
+  // No local Firestore subscription needed.
+  const { openNoteId, setOpenNoteId, user, allNotes } = useStore();
+  const { getDocById, saveDoc } = useFirestore();
   const [note, setNote] = useState<Note | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -294,7 +296,6 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const lastNoteId = useRef<string | null>(null);
 
-  const [allNotes, setAllNotes] = useState<Note[]>([]);
   const [backlinks, setBacklinks] = useState<Note[]>([]);
 
   const [wikilinkSearch, setWikilinkSearch] = useState<string | null>(null);
@@ -304,12 +305,6 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
     bracketOffset: number;
     cursorOffset: number;
   } | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    const unsub = subscribeCollection<Note>("notes", setAllNotes);
-    return () => unsub();
-  }, [user, subscribeCollection]);
 
   useEffect(() => {
     if (!openNoteId) {
@@ -511,7 +506,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
     return (
       <div
         className={`flex flex-col items-center justify-center gap-4 ${className}`}
-        style={{ background: "#0d0d12" }}
+        style={{ background: "var(--nous-bg)" }}
       >
         <div className="flex flex-col items-center gap-4 opacity-60">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
@@ -531,10 +526,10 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
             </svg>
           </div>
           <div className="text-center">
-            <p className="text-[14px] font-medium mb-1" style={{ color: "#6a6a7e" }}>
+            <p className="text-[14px] font-medium mb-1" style={{ color: "var(--nous-secondary)" }}>
               Select a note
             </p>
-            <p className="text-[12px]" style={{ color: "#3a3a50" }}>
+            <p className="text-[12px]" style={{ color: "var(--nous-tertiary)" }}>
               Choose a page from the sidebar to start editing
             </p>
           </div>
@@ -551,12 +546,12 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
       onMouseDown={(e) => { e.preventDefault(); onClick(); }}
       className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150"
       style={{
-        color: active ? "#e8e8f0" : "#5a5a6e",
+        color: active ? "var(--nous-primary)" : "var(--nous-secondary)",
         background: active ? "rgba(124,122,255,0.12)" : "transparent",
       }}
       title={btnTitle}
-      onMouseEnter={(e) => { e.currentTarget.style.color = "#e8e8f0"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.color = active ? "#e8e8f0" : "#5a5a6e"; e.currentTarget.style.background = active ? "rgba(124,122,255,0.12)" : "transparent"; }}
+      onMouseEnter={(e) => { e.currentTarget.style.color = "var(--nous-primary)"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.color = active ? "var(--nous-primary)" : "var(--nous-secondary)"; e.currentTarget.style.background = active ? "rgba(124,122,255,0.12)" : "transparent"; }}
     >
       {children}
     </button>
@@ -569,7 +564,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
   return (
     <div
       className={`flex flex-col h-full relative ${className}`}
-      style={{ background: "#0d0d12" }}
+      style={{ background: "var(--nous-bg)" }}
     >
       {/* Drawing overlay */}
       {showDraw && (
@@ -671,7 +666,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
           {status === "saving" && (
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#f59e0b" }} />
-              <span className="text-[11px]" style={{ color: "#6a6a7e" }}>Saving</span>
+              <span className="text-[11px]" style={{ color: "var(--nous-secondary)" }}>Saving</span>
             </div>
           )}
           {status === "saved" && (
@@ -718,7 +713,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
               >
                 <div
                   className="px-3 py-2 text-[11px] font-medium"
-                  style={{ color: "#4a4a5e" }}
+                  style={{ color: "var(--nous-secondary)" }}
                 >
                   Link to page
                 </div>
@@ -730,7 +725,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
                       insertWikilink(n);
                     }}
                     className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 text-[13px] transition-all duration-100"
-                    style={{ color: "#e8e8f0" }}
+                    style={{ color: "var(--nous-primary)" }}
                     onMouseEnter={(e) =>
                       (e.currentTarget.style.background =
                         "rgba(124,122,255,0.10)")
@@ -769,7 +764,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
             style={{
               fontSize: "40px",
               fontWeight: 700,
-              color: "#e8e8f0",
+              color: "var(--nous-primary)",
               letterSpacing: "-0.03em",
               lineHeight: 1.15,
               minHeight: "1.15em",
@@ -783,16 +778,16 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
               style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
               {/* Date */}
               <div className="flex items-center gap-2">
-                <span className="text-[12px]" style={{ color: "#3a3a50" }}>Created</span>
-                <span className="text-[12px]" style={{ color: "#6a6a7e" }}>
+                <span className="text-[12px]" style={{ color: "var(--nous-secondary)" }}>Created</span>
+                <span className="text-[12px]" style={{ color: "var(--nous-secondary)" }}>
                   {format(new Date(note.createdAt), "MMM d, yyyy")}
                 </span>
               </div>
               {/* Updated */}
               {note.updatedAt && (
                 <div className="flex items-center gap-2">
-                  <span className="text-[12px]" style={{ color: "#3a3a50" }}>Updated</span>
-                  <span className="text-[12px]" style={{ color: "#6a6a7e" }}>
+                  <span className="text-[12px]" style={{ color: "var(--nous-secondary)" }}>Updated</span>
+                  <span className="text-[12px]" style={{ color: "var(--nous-secondary)" }}>
                     {format(new Date(note.updatedAt), "MMM d, h:mm a")}
                   </span>
                 </div>
@@ -800,7 +795,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
               {/* Links */}
               {note.linkedNoteIds?.length > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="text-[12px]" style={{ color: "#3a3a50" }}>Links</span>
+                  <span className="text-[12px]" style={{ color: "var(--nous-secondary)" }}>Links</span>
                   <span className="text-[12px] font-medium" style={{ color: "#7c7aff" }}>
                     {note.linkedNoteIds.length}
                   </span>
@@ -825,12 +820,12 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
             <div className="mt-10">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a4a5e" strokeWidth="1.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--nous-secondary)" strokeWidth="1.5">
                     <rect x="3" y="3" width="18" height="18" rx="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5" fill="#4a4a5e"/>
+                    <circle cx="8.5" cy="8.5" r="1.5" fill="var(--nous-secondary)"/>
                     <path d="M21 15l-5-5L5 21"/>
                   </svg>
-                  <span className="text-[12px] font-medium" style={{ color: "#4a4a5e" }}>Drawing</span>
+                  <span className="text-[12px] font-medium" style={{ color: "var(--nous-secondary)" }}>Drawing</span>
                 </div>
                 <div className="flex gap-3">
                   <button
@@ -845,9 +840,9 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
                   <button
                     onClick={() => { setDrawing(undefined); saveNote(title, content, undefined); }}
                     className="text-[12px] transition-colors"
-                    style={{ color: "#6a6a7e" }}
+                    style={{ color: "var(--nous-secondary)" }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = "#f87171")}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = "#6a6a7e")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "var(--nous-secondary)")}
                   >
                     Remove
                   </button>
@@ -872,11 +867,11 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
           {backlinks.length > 0 && (
             <div className="mt-16 pt-8" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
               <div className="flex items-center gap-2 mb-4">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a4a5e" strokeWidth="1.8">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--nous-secondary)" strokeWidth="1.8">
                   <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
                   <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
                 </svg>
-                <span className="text-[13px] font-semibold" style={{ color: "#5a5a6e" }}>
+                <span className="text-[13px] font-semibold" style={{ color: "var(--nous-secondary)" }}>
                   {backlinks.length} Backlink{backlinks.length !== 1 ? "s" : ""}
                 </span>
               </div>

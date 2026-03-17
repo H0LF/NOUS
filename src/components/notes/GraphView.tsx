@@ -14,9 +14,7 @@ import cytoscape from "cytoscape"; // Import here, assuming Client Component con
 // BUT if cytoscape runs immediate code that fails on server, we need to be careful.
 // Let's use standard import here and ensure the parent (Page) imports THIS component via dynamic.
 
-import { Note, Folder } from "@/types";
 import { useStore } from "@/store";
-import { useFirestore } from "@/hooks/useFirestore";
 
 interface GraphViewProps {
   onClose: () => void;
@@ -24,18 +22,13 @@ interface GraphViewProps {
 
 const GraphView = ({ onClose }: GraphViewProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { user, setOpenNoteId, theme } = useStore();
-  const { queryDocs } = useFirestore();
+  const { user, setOpenNoteId, theme, allNotes: notes, allFolders: folders } = useStore();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user || !containerRef.current) return;
 
-    const initGraph = async () => {
-      // Load all notes
-      const notes = await queryDocs<Note>("notes");
-      // Load folders for colors
-      const folders = await queryDocs<Folder>("folders");
+    const initGraph = () => {
       
       const folderColorMap: Record<string, string> = {};
       folders.forEach(f => folderColorMap[f.id] = f.color);
@@ -126,7 +119,7 @@ const GraphView = ({ onClose }: GraphViewProps) => {
     return () => {
         // cy.destroy()? reference is lost unless stored. 
     };
-  }, [user, queryDocs, setOpenNoteId, onClose, theme]);
+  }, [user, notes, folders, setOpenNoteId, onClose, theme]);
 
   return (
     <div className="fixed inset-0 z-50 bg-nous-bg animate-fadeIn flex flex-col">

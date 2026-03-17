@@ -1,36 +1,32 @@
-﻿"use client";
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import { useGamification, Badge, RadarAxis } from "@/hooks/useGamification";
+import { useSettings } from "@/hooks/useSettings";
+import { Toggle } from "@/components/ui/Toggle";
 
 // ── Radar (spider) chart ──────────────────────────────────────────────────────
 const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
   const SIZE = 200;
   const cx = SIZE / 2;
   const cy = SIZE / 2;
-  const R = 80; // max radius
+  const R = 80;
   const n = axes.length;
   const rings = [0.2, 0.4, 0.6, 0.8, 1.0];
 
   const angleOf = (i: number) => (i / n) * Math.PI * 2 - Math.PI / 2;
-
   const polarToXY = (angle: number, r: number) => ({
     x: cx + r * Math.cos(angle),
     y: cy + r * Math.sin(angle),
   });
 
-  // Ring polygons
-  const ringPath = (ratio: number) => {
-    return (
-      axes
-        .map((_, i) => {
-          const { x, y } = polarToXY(angleOf(i), R * ratio);
-          return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`;
-        })
-        .join(" ") + " Z"
-    );
-  };
+  const ringPath = (ratio: number) =>
+    axes
+      .map((_, i) => {
+        const { x, y } = polarToXY(angleOf(i), R * ratio);
+        return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`;
+      })
+      .join(" ") + " Z";
 
-  // Data polygon
   const dataPath =
     axes
       .map((axis, i) => {
@@ -39,16 +35,10 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
       })
       .join(" ") + " Z";
 
-  // Label positions (pushed outside the outer ring)
   const labelOffset = R + 22;
 
   return (
-    <svg
-      width={SIZE}
-      height={SIZE}
-      viewBox={`0 0 ${SIZE} ${SIZE}`}
-      style={{ overflow: "visible" }}
-    >
+    <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ overflow: "visible" }}>
       <defs>
         <linearGradient id="radarFill" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#7c7aff" stopOpacity="0.35" />
@@ -67,20 +57,16 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
         </filter>
       </defs>
 
-      {/* Grid rings */}
       {rings.map((ratio, ri) => (
         <path
           key={ri}
           d={ringPath(ratio)}
           fill="none"
-          stroke={
-            ratio === 1 ? "rgba(124,122,255,0.25)" : "rgba(255,255,255,0.06)"
-          }
+          stroke={ratio === 1 ? "rgba(124,122,255,0.25)" : "var(--nous-border)"}
           strokeWidth={ratio === 1 ? 1 : 0.8}
         />
       ))}
 
-      {/* Axis spokes */}
       {axes.map((_, i) => {
         const { x, y } = polarToXY(angleOf(i), R);
         return (
@@ -90,25 +76,15 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
             y1={cy}
             x2={x.toFixed(2)}
             y2={y.toFixed(2)}
-            stroke="rgba(255,255,255,0.07)"
+            stroke="var(--nous-border)"
             strokeWidth="0.8"
           />
         );
       })}
 
-      {/* Data fill */}
       <path d={dataPath} fill="url(#radarFill)" />
+      <path d={dataPath} fill="none" stroke="url(#radarStroke)" strokeWidth="1.8" filter="url(#radarGlow)" />
 
-      {/* Data stroke */}
-      <path
-        d={dataPath}
-        fill="none"
-        stroke="url(#radarStroke)"
-        strokeWidth="1.8"
-        filter="url(#radarGlow)"
-      />
-
-      {/* Data dots */}
       {axes.map((axis, i) => {
         const { x, y } = polarToXY(angleOf(i), R * (axis.value / 100));
         return (
@@ -118,23 +94,18 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
             cy={y.toFixed(2)}
             r="3.5"
             fill="#38bdf8"
-            stroke="#0d0d12"
+            stroke="var(--nous-bg)"
             strokeWidth="1.5"
             filter="url(#radarGlow)"
           />
         );
       })}
 
-      {/* Labels */}
       {axes.map((axis, i) => {
         const angle = angleOf(i);
         const { x, y } = polarToXY(angle, labelOffset);
         const textAnchor =
-          Math.abs(Math.cos(angle)) < 0.1
-            ? "middle"
-            : Math.cos(angle) >= 0
-              ? "start"
-              : "end";
+          Math.abs(Math.cos(angle)) < 0.1 ? "middle" : Math.cos(angle) >= 0 ? "start" : "end";
         const dy = Math.sin(angle) > 0.5 ? 10 : Math.sin(angle) < -0.5 ? -2 : 4;
         return (
           <g key={i}>
@@ -144,7 +115,7 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
               textAnchor={textAnchor}
               fontSize="9"
               fontWeight="600"
-              fill="rgba(232,232,240,0.7)"
+              fill="var(--nous-secondary)"
               fontFamily="-apple-system, sans-serif"
             >
               {axis.label}
@@ -164,40 +135,17 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
         );
       })}
 
-      {/* Center glow */}
-      <circle
-        cx={cx}
-        cy={cy}
-        r="4"
-        fill="#7c7aff"
-        opacity="0.5"
-        filter="url(#radarGlow)"
-      />
+      <circle cx={cx} cy={cy} r="4" fill="#7c7aff" opacity="0.5" filter="url(#radarGlow)" />
     </svg>
   );
 };
 
 // ── Badge icon ────────────────────────────────────────────────────────────────
-const BadgeIcon = ({
-  type,
-  earned,
-}: {
-  type: Badge["icon"];
-  earned: boolean;
-}) => {
-  const color = earned ? "#7c7aff" : "#2e2e40";
+const BadgeIcon = ({ type, earned }: { type: Badge["icon"]; earned: boolean }) => {
+  const color = earned ? "#7c7aff" : "var(--nous-tertiary)";
   const icons: Record<Badge["icon"], React.ReactNode> = {
     food: (
-      <svg
-        width="13"
-        height="13"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
         <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
         <line x1="6" y1="1" x2="6" y2="4" />
@@ -206,36 +154,15 @@ const BadgeIcon = ({
       </svg>
     ),
     gym: (
-      <svg
-        width="13"
-        height="13"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M6.5 6.5h11" />
-        <path d="M6.5 17.5h11" />
-        <path d="M6 20v-4" />
-        <path d="M18 20v-4" />
-        <path d="M6 8V4" />
-        <path d="M18 8V4" />
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6.5 6.5h11" /><path d="M6.5 17.5h11" />
+        <path d="M6 20v-4" /><path d="M18 20v-4" />
+        <path d="M6 8V4" /><path d="M18 8V4" />
         <path d="M3 12h18" />
       </svg>
     ),
     class: (
-      <svg
-        width="13"
-        height="13"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="4" width="18" height="18" rx="3" />
         <line x1="16" y1="2" x2="16" y2="6" />
         <line x1="8" y1="2" x2="8" y2="6" />
@@ -243,30 +170,12 @@ const BadgeIcon = ({
       </svg>
     ),
     streak: (
-      <svg
-        width="13"
-        height="13"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
       </svg>
     ),
     star: (
-      <svg
-        width="13"
-        height="13"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
       </svg>
     ),
@@ -277,24 +186,55 @@ const BadgeIcon = ({
 // ── Main panel ────────────────────────────────────────────────────────────────
 export const GamificationPanel = () => {
   const g = useGamification();
+  const { settings, updateSettings } = useSettings();
+  const [showConfig, setShowConfig] = useState(false);
+
+  const gamEnabled = settings.gamificationEnabled ?? true;
+  const gamFeatures = settings.gamificationFeatures ?? { food: true, gym: true, calendar: true, notes: true };
+
+  // ── Master toggle (always visible) ─────────────────────────────────────────
+  const MasterToggle = () => (
+    <div
+      className="rounded-2xl px-5 py-4 flex items-center justify-between"
+      style={{ background: "rgba(124,122,255,0.05)", border: "1px solid rgba(124,122,255,0.12)" }}
+    >
+      <div>
+        <p className="text-sm font-semibold" style={{ color: "var(--nous-primary)" }}>
+          Progress Tracking
+        </p>
+        <p className="text-[11px] mt-0.5" style={{ color: "var(--nous-secondary)" }}>
+          XP, levels, streaks &amp; badges
+        </p>
+      </div>
+      <Toggle
+        checked={gamEnabled}
+        onChange={(v) => updateSettings({ gamificationEnabled: v })}
+      />
+    </div>
+  );
+
+  if (!gamEnabled) {
+    return (
+      <div className="space-y-3">
+        <MasterToggle />
+        <p className="text-xs text-center" style={{ color: "var(--nous-secondary)" }}>
+          Progress tracking is disabled
+        </p>
+      </div>
+    );
+  }
 
   if (g.loading) {
     return (
-      <div
-        className="rounded-2xl p-6 space-y-4 animate-pulse"
-        style={{
-          background: "rgba(124,122,255,0.05)",
-          border: "1px solid rgba(124,122,255,0.1)",
-        }}
-      >
+      <div className="space-y-3">
+        <MasterToggle />
         <div
-          className="h-4 rounded-full w-1/3"
-          style={{ background: "rgba(255,255,255,0.06)" }}
-        />
-        <div
-          className="h-48 rounded-xl"
-          style={{ background: "rgba(255,255,255,0.03)" }}
-        />
+          className="rounded-2xl p-6 animate-pulse"
+          style={{ background: "rgba(124,122,255,0.05)", border: "1px solid rgba(124,122,255,0.1)" }}
+        >
+          <div className="h-4 rounded-full w-1/3 mb-4" style={{ background: "var(--nous-border)" }} />
+          <div className="h-48 rounded-xl" style={{ background: "var(--nous-surface)" }} />
+        </div>
       </div>
     );
   }
@@ -303,53 +243,40 @@ export const GamificationPanel = () => {
   const lockedBadges = g.badges.filter((b) => !b.earned);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
+      <MasterToggle />
+
       {/* ── Level + XP bar ── */}
       <div
         className="rounded-2xl p-5 space-y-3"
         style={{
-          background:
-            "linear-gradient(135deg, rgba(124,122,255,0.1) 0%, rgba(56,189,248,0.06) 100%)",
+          background: "linear-gradient(135deg, rgba(124,122,255,0.1) 0%, rgba(56,189,248,0.06) 100%)",
           border: "1px solid rgba(124,122,255,0.18)",
         }}
       >
         <div className="flex items-end justify-between">
           <div>
-            <p
-              className="text-[10px] font-semibold uppercase tracking-widest mb-0.5"
-              style={{ color: "#7c7aff" }}
-            >
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-0.5" style={{ color: "var(--nous-accent)" }}>
               Level
             </p>
-            <p
-              className="text-4xl font-black leading-none"
-              style={{ color: "#e8e8f0" }}
-            >
+            <p className="text-4xl font-black leading-none" style={{ color: "var(--nous-primary)" }}>
               {g.level}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-[10px]" style={{ color: "#4a4a5e" }}>
-              Total XP
-            </p>
-            <p className="text-2xl font-bold" style={{ color: "#a5a3ff" }}>
+            <p className="text-[10px]" style={{ color: "var(--nous-secondary)" }}>Total XP</p>
+            <p className="text-2xl font-bold" style={{ color: "var(--nous-accent)" }}>
               {g.xp.toLocaleString()}
             </p>
           </div>
         </div>
 
         <div>
-          <div
-            className="flex justify-between text-[10px] mb-1.5"
-            style={{ color: "#3a3a50" }}
-          >
+          <div className="flex justify-between text-[10px] mb-1.5" style={{ color: "var(--nous-secondary)" }}>
             <span>{g.xpForCurrentLevel.toLocaleString()} XP</span>
             <span>{g.xpForNextLevel.toLocaleString()} XP</span>
           </div>
-          <div
-            className="h-2 rounded-full overflow-hidden"
-            style={{ background: "rgba(255,255,255,0.06)" }}
-          >
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--nous-border)" }}>
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{
@@ -359,65 +286,60 @@ export const GamificationPanel = () => {
               }}
             />
           </div>
-          <p
-            className="text-[10px] mt-1 text-right"
-            style={{ color: "#3a3a50" }}
-          >
+          <p className="text-[10px] mt-1 text-right" style={{ color: "var(--nous-secondary)" }}>
             {Math.max(0, g.xpForNextLevel - g.xp)} XP to Level {g.level + 1}
           </p>
+        </div>
+
+        {/* Quick stats */}
+        <div className="grid grid-cols-3 gap-2 pt-1">
+          {[
+            { label: "Food streak", value: `${g.streak}d` },
+            { label: "Gym streak", value: `${g.gymStreak}d` },
+            { label: "Workouts", value: g.totalWorkouts },
+          ].map(({ label, value }) => (
+            <div
+              key={label}
+              className="rounded-xl p-2.5 text-center"
+              style={{ background: "var(--nous-card)", border: "1px solid var(--nous-border)" }}
+            >
+              <p className="text-lg font-bold leading-none mb-0.5" style={{ color: "var(--nous-primary)" }}>
+                {value}
+              </p>
+              <p className="text-[9px] uppercase tracking-wider" style={{ color: "var(--nous-secondary)" }}>
+                {label}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* ── Radar chart ── */}
       <div
         className="rounded-2xl p-5 flex flex-col items-center gap-4"
-        style={{
-          background: "rgba(255,255,255,0.02)",
-          border: "1px solid rgba(255,255,255,0.05)",
-        }}
+        style={{ background: "var(--nous-surface)", border: "1px solid var(--nous-border)" }}
       >
-        <p
-          className="w-full text-[10px] font-semibold uppercase tracking-widest self-start"
-          style={{ color: "#4a4a5e" }}
-        >
+        <p className="w-full text-[10px] font-semibold uppercase tracking-widest self-start" style={{ color: "var(--nous-secondary)" }}>
           Performance
         </p>
         {g.radar.length === 6 ? (
           <RadarChart axes={g.radar} />
         ) : (
-          <div
-            className="h-48 flex items-center justify-center text-[12px]"
-            style={{ color: "#3a3a50" }}
-          >
-            Loading stats...
+          <div className="h-48 flex items-center justify-center text-[12px]" style={{ color: "var(--nous-secondary)" }}>
+            Loading stats…
           </div>
         )}
-
-        {/* Axis legend row */}
         <div className="grid grid-cols-3 gap-x-4 gap-y-2 w-full">
           {g.radar.map((axis) => (
             <div key={axis.label} className="flex flex-col gap-0.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px]" style={{ color: "#4a4a5e" }}>
-                  {axis.label}
-                </span>
-                <span
-                  className="text-[10px] font-bold"
-                  style={{ color: "#7c7aff" }}
-                >
-                  {axis.value}%
-                </span>
+                <span className="text-[10px]" style={{ color: "var(--nous-secondary)" }}>{axis.label}</span>
+                <span className="text-[10px] font-bold" style={{ color: "var(--nous-accent)" }}>{axis.value}%</span>
               </div>
-              <div
-                className="h-1 rounded-full overflow-hidden"
-                style={{ background: "rgba(255,255,255,0.05)" }}
-              >
+              <div className="h-1 rounded-full overflow-hidden" style={{ background: "var(--nous-border)" }}>
                 <div
                   className="h-full rounded-full"
-                  style={{
-                    width: `${axis.value}%`,
-                    background: "linear-gradient(90deg, #7c7aff, #38bdf8)",
-                  }}
+                  style={{ width: `${axis.value}%`, background: "linear-gradient(90deg, #7c7aff, #38bdf8)" }}
                 />
               </div>
             </div>
@@ -425,58 +347,129 @@ export const GamificationPanel = () => {
         </div>
       </div>
 
+      {/* ── Badges ── */}
+      {earnedBadges.length > 0 && (
+        <div
+          className="rounded-2xl p-4 space-y-3"
+          style={{ background: "var(--nous-surface)", border: "1px solid var(--nous-border)" }}
+        >
+          <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--nous-secondary)" }}>
+            Achievements ({earnedBadges.length}/{g.badges.length})
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {earnedBadges.map((badge) => (
+              <div
+                key={badge.id}
+                title={badge.description}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-medium"
+                style={{
+                  background: "rgba(124,122,255,0.12)",
+                  border: "1px solid rgba(124,122,255,0.25)",
+                  color: "var(--nous-accent)",
+                }}
+              >
+                <BadgeIcon type={badge.icon} earned />
+                {badge.label}
+              </div>
+            ))}
+          </div>
+          {lockedBadges.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {lockedBadges.map((badge) => (
+                <div
+                  key={badge.id}
+                  title={badge.description}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-medium"
+                  style={{
+                    background: "var(--nous-card)",
+                    border: "1px solid var(--nous-border)",
+                    color: "var(--nous-tertiary)",
+                  }}
+                >
+                  <BadgeIcon type={badge.icon} earned={false} />
+                  {badge.label}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── XP guide ── */}
       <div
         className="rounded-xl p-4 space-y-2"
-        style={{
-          background: "rgba(255,255,255,0.02)",
-          border: "1px solid rgba(255,255,255,0.04)",
-        }}
+        style={{ background: "var(--nous-surface)", border: "1px solid var(--nous-border)" }}
       >
-        <p
-          className="text-[10px] font-semibold uppercase tracking-widest"
-          style={{ color: "#3a3a50" }}
-        >
-          Como ganhar XP
+        <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--nous-secondary)" }}>
+          How to earn XP
         </p>
-        <div className="space-y-1 text-[11px]" style={{ color: "#3a3a50" }}>
-          <div className="flex justify-between">
-            <span>Registar refeicao num dia</span>
-            <span className="font-medium" style={{ color: "#4a4a5e" }}>
-              +10 XP
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Completar treino</span>
-            <span className="font-medium" style={{ color: "#4a4a5e" }}>
-              +50 XP
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Treino de alto volume</span>
-            <span className="font-medium" style={{ color: "#4a4a5e" }}>
-              +25 XP
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Aula no calendario</span>
-            <span className="font-medium" style={{ color: "#4a4a5e" }}>
-              +15 XP
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Dia de streak alimentar</span>
-            <span className="font-medium" style={{ color: "#4a4a5e" }}>
-              +5 XP
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Dia de streak de treino</span>
-            <span className="font-medium" style={{ color: "#4a4a5e" }}>
-              +8 XP
-            </span>
-          </div>
+        <div className="space-y-1 text-[11px]" style={{ color: "var(--nous-secondary)" }}>
+          {[
+            { label: "Log a meal day", xp: "+10 XP" },
+            { label: "Complete a workout", xp: "+50 XP" },
+            { label: "High-volume session (≥5 000 kg)", xp: "+25 XP" },
+            { label: "Class in calendar", xp: "+15 XP" },
+            { label: "Food streak day", xp: "+5 XP" },
+            { label: "Gym streak day", xp: "+8 XP" },
+          ].map(({ label, xp }) => (
+            <div key={label} className="flex justify-between">
+              <span>{label}</span>
+              <span className="font-medium" style={{ color: "var(--nous-accent)" }}>{xp}</span>
+            </div>
+          ))}
         </div>
+      </div>
+
+      {/* ── Feature toggles ── */}
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{ border: "1px solid var(--nous-border)" }}
+      >
+        <button
+          className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors"
+          style={{ background: "var(--nous-surface)" }}
+          onClick={() => setShowConfig((v) => !v)}
+        >
+          <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--nous-secondary)" }}>
+            XP Sources
+          </span>
+          <svg
+            width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+            className={`transition-transform duration-200 ${showConfig ? "rotate-180" : ""}`}
+            style={{ color: "var(--nous-secondary)" }}
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+
+        {showConfig && (
+          <div className="px-4 pb-4 space-y-3 animate-fadeIn" style={{ background: "var(--nous-surface)" }}>
+            {(
+              [
+                { key: "food", label: "Food logging", desc: "+10 XP / day" },
+                { key: "gym", label: "Gym workouts", desc: "+50 XP / session" },
+                { key: "calendar", label: "Calendar classes", desc: "+15 XP / class" },
+                { key: "notes", label: "Notes (future)", desc: "Coming soon" },
+              ] as const
+            ).map(({ key, label, desc }) => (
+              <div key={key} className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm" style={{ color: "var(--nous-primary)" }}>{label}</p>
+                  <p className="text-[10px]" style={{ color: "var(--nous-secondary)" }}>{desc}</p>
+                </div>
+                <Toggle
+                  checked={gamFeatures[key]}
+                  onChange={(v) =>
+                    updateSettings({
+                      gamificationFeatures: { ...gamFeatures, [key]: v },
+                    })
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -5,10 +5,32 @@ import { Button } from "@/components/ui/Button";
 import { FoodItem } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 
+/**
+ * Normalised product shape accepted by this modal.
+ * Barcode lookups return per-100g fields; AI results return absolute values
+ * (source === "ai"). Quantity scaling is applied to both.
+ */
+export interface FoodProduct {
+  name: string;
+  source: "barcode" | "ai";
+  // Barcode path: per-100g values
+  caloriesPer100g?: number;
+  proteinPer100g?: number;
+  carbsPer100g?: number;
+  fatPer100g?: number;
+  fiberPer100g?: number;
+  // AI path: absolute values for the described portion
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  fiber?: number;
+}
+
 interface FoodConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
-  product: any; // Raw data from API
+  product: FoodProduct;
   onConfirm: (item: FoodItem, meal: string) => void;
 }
 

@@ -58,14 +58,14 @@ export const NotesList = ({ className = "", onNotesChange }: NotesListProps) => 
 
   return (
     <div className={`flex flex-col h-full ${className}`}
-      style={{ background: '#111116', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+      style={{ background: 'var(--nous-bg)', borderRight: '1px solid var(--nous-border)' }}>
 
       {/* Header */}
       <div className="px-3 pt-4 pb-3 space-y-2.5">
         {/* Search */}
         <div className="relative">
           <svg className="absolute left-2.5 top-1/2 -translate-y-1/2" width="13" height="13"
-            viewBox="0 0 24 24" fill="none" stroke="#4a4a5e" strokeWidth="2">
+            viewBox="0 0 24 24" fill="none" stroke="var(--nous-secondary)" strokeWidth="2">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input
@@ -76,7 +76,7 @@ export const NotesList = ({ className = "", onNotesChange }: NotesListProps) => 
             style={{
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(255,255,255,0.06)',
-              color: '#e8e8f0',
+              color: 'var(--nous-primary)',
             }}
           />
         </div>
@@ -115,7 +115,7 @@ export const NotesList = ({ className = "", onNotesChange }: NotesListProps) => 
             >
               <div className="flex items-start justify-between gap-2 mb-1">
                 <h4 className="text-[12px] font-semibold leading-tight truncate"
-                  style={{ color: active ? '#a5a3ff' : note.title ? '#e8e8f0' : '#4a4a5e' }}>
+                  style={{ color: active ? '#a5a3ff' : note.title ? 'var(--nous-primary)' : 'var(--nous-secondary)' }}>
                   {note.title || "Untitled"}
                 </h4>
                 <div className="flex items-center gap-1.5 shrink-0">
@@ -123,9 +123,9 @@ export const NotesList = ({ className = "", onNotesChange }: NotesListProps) => 
                   <button
                     onClick={e => handleDelete(e, note.id)}
                     className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded transition-all"
-                    style={{ color: '#4a4a5e' }}
+                    style={{ color: 'var(--nous-secondary)' }}
                     onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
-                    onMouseLeave={e => (e.currentTarget.style.color = '#4a4a5e')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--nous-secondary)')}
                     title="Delete note"
                   >
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -135,13 +135,13 @@ export const NotesList = ({ className = "", onNotesChange }: NotesListProps) => 
                       <path d="M9 6V4h6v2"/>
                     </svg>
                   </button>
-                  <span className="text-[9px] mt-0.5" style={{ color: '#3a3a50' }}>
+                  <span className="text-[9px] mt-0.5" style={{ color: 'var(--nous-tertiary)' }}>
                     {format(new Date(note.updatedAt), "MMM d")}
                   </span>
                 </div>
               </div>
               {preview && (
-                <p className="text-[11px] leading-relaxed line-clamp-2" style={{ color: '#4a4a5e' }}>
+                <p className="text-[11px] leading-relaxed line-clamp-2" style={{ color: 'var(--nous-secondary)' }}>
                   {preview}
                 </p>
               )}
@@ -162,7 +162,7 @@ export const NotesList = ({ className = "", onNotesChange }: NotesListProps) => 
         })}
         {filtered.length === 0 && (
           <div className="p-6 text-center">
-            <p className="text-[11px]" style={{ color: '#3a3a50' }}>
+            <p className="text-[11px]" style={{ color: 'var(--nous-tertiary)' }}>
               {search ? "No notes match your search" : "No notes yet"}
             </p>
           </div>

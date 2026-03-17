@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide native number input spinners */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /*
   Premium Design System — NOUS
   Inspired by: Linear, Vercel, Notion, Obsidian
@@ -20,7 +27,7 @@
   --nous-bg:        #f0f0f5;
   --nous-surface:   #ffffff;
   --nous-card:      #f7f7fb;
-  --nous-border:    rgba(0,0,0,0.07);
+  --nous-border:    rgba(0,0,0,0.10);
   --nous-accent:    #5e5ce6;
   --nous-accent2:   #30c48d;
   --nous-primary:   #1a1a2e;
@@ -69,14 +76,20 @@ body {
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
+html.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); }
+html.dark ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
 
 /* ─── Glass morphism ─── */
 .glass {
-  background: rgba(22, 22, 30, 0.85);
+  background: rgba(247, 247, 251, 0.85);
   backdrop-filter: saturate(180%) blur(24px);
   -webkit-backdrop-filter: saturate(180%) blur(24px);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+}
+html.dark .glass {
+  background: rgba(22, 22, 30, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
@@ -126,7 +139,7 @@ body {
 /* ─── ContentEditable placeholder ─── */
 [contenteditable][data-placeholder]:empty::before {
   content: attr(data-placeholder);
-  color: #2e2e40;
+  color: var(--nous-tertiary);
   pointer-events: none;
   font-style: italic;
 }
@@ -138,7 +151,7 @@ body {
 .obsidian-content {
   font-size: 16px;
   line-height: 1.8;
-  color: #c8c8d8;
+  color: var(--nous-primary);
   min-height: 300px;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -148,17 +161,17 @@ body {
 .obsidian-content h1 {
   font-size: 30px;
   font-weight: 700;
-  color: #e8e8f0;
+  color: var(--nous-primary);
   letter-spacing: -0.025em;
   margin: 2em 0 0.6em;
   line-height: 1.2;
   padding-bottom: 0.4em;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--nous-border);
 }
 .obsidian-content h2 {
   font-size: 24px;
   font-weight: 600;
-  color: #e0e0ee;
+  color: var(--nous-primary);
   letter-spacing: -0.02em;
   margin: 1.6em 0 0.5em;
   line-height: 1.3;
@@ -166,7 +179,7 @@ body {
 .obsidian-content h3 {
   font-size: 18px;
   font-weight: 600;
-  color: #d0d0e0;
+  color: var(--nous-primary);
   letter-spacing: -0.01em;
   margin: 1.4em 0 0.4em;
   line-height: 1.4;
@@ -179,26 +192,26 @@ body {
 
 /* Inline text */
 .obsidian-content strong {
-  color: #e8e8f0;
+  color: var(--nous-primary);
   font-weight: 600;
 }
 .obsidian-content em {
-  color: #b0aeff;
+  color: var(--nous-accent);
   font-style: italic;
 }
 .obsidian-content s {
-  color: #5a5a6e;
+  color: var(--nous-secondary);
   text-decoration: line-through;
 }
 .obsidian-content a {
-  color: #7c7aff;
+  color: var(--nous-accent);
   text-decoration: underline;
   text-decoration-color: rgba(124,122,255,0.3);
   text-underline-offset: 3px;
   transition: text-decoration-color 0.15s;
 }
 .obsidian-content a:hover {
-  text-decoration-color: #7c7aff;
+  text-decoration-color: var(--nous-accent);
 }
 
 /* Lists — refined spacing */
@@ -211,11 +224,11 @@ body {
   padding-left: 0.2em;
 }
 .obsidian-content ul li::marker {
-  color: #7c7aff;
+  color: var(--nous-accent);
   font-size: 0.7em;
 }
 .obsidian-content ol li::marker {
-  color: #7c7aff;
+  color: var(--nous-accent);
   font-weight: 500;
 }
 
@@ -224,16 +237,16 @@ body {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
   font-size: 0.875em;
   background: rgba(124,122,255,0.07);
-  border: 1px solid rgba(124,122,255,0.12);
+  border: 1px solid rgba(124,122,255,0.15);
   border-radius: 5px;
   padding: 2px 7px;
-  color: #b0aeff;
+  color: var(--nous-accent);
 }
 
 /* Pre/code blocks */
 .obsidian-content pre {
-  background: rgba(255,255,255,0.025);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--nous-card);
+  border: 1px solid var(--nous-border);
   border-radius: 12px;
   padding: 18px 20px;
   overflow-x: auto;
@@ -243,19 +256,19 @@ body {
   background: none;
   border: none;
   padding: 0;
-  color: #c8c8d8;
+  color: var(--nous-primary);
   font-size: 13px;
   line-height: 1.7;
 }
 
 /* Blockquote — Notion-style */
 .obsidian-content blockquote {
-  border-left: 3px solid #7c7aff;
+  border-left: 3px solid var(--nous-accent);
   padding: 8px 20px;
   margin: 1.2em 0;
-  color: #8a8a9c;
+  color: var(--nous-secondary);
   font-style: italic;
-  background: rgba(124,122,255,0.03);
+  background: rgba(124,122,255,0.04);
   border-radius: 0 10px 10px 0;
 }
 
@@ -263,13 +276,13 @@ body {
 .obsidian-content hr {
   border: none;
   height: 1px;
-  background: rgba(255,255,255,0.06);
+  background: var(--nous-border);
   margin: 2em 0;
 }
 
 /* Wiki-link style [[...]] */
 .obsidian-content .wiki-link {
-  color: #7c7aff;
+  color: var(--nous-accent);
   background: rgba(124,122,255,0.08);
   border-radius: 4px;
   padding: 1px 5px;
@@ -286,9 +299,9 @@ body {
   font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Fira Mono', Menlo, Monaco, Consolas, monospace;
   font-size: 13px;
   line-height: 1.7;
-  color: #c8c8d8;
-  background: rgba(255,255,255,0.025);
-  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--nous-primary);
+  background: var(--nous-card);
+  border: 1px solid var(--nous-border);
   border-left: 3px solid #30c48d;
   border-radius: 10px;
   padding: 16px 20px;
@@ -307,7 +320,7 @@ body {
 /* ─── Placeholder for contentEditable ─── */
 [data-placeholder]:empty::before {
   content: attr(data-placeholder);
-  color: #2e2e40;
+  color: var(--nous-tertiary);
   pointer-events: none;
   font-style: italic;
 }

@@ -46,7 +46,14 @@ export const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     return result.user;
-  } catch (error) {
+  } catch (error: unknown) {
+    // User closed the popup — not an error worth surfacing
+    if (
+      error instanceof Error &&
+      (error as { code?: string }).code === "auth/popup-closed-by-user"
+    ) {
+      return null;
+    }
     console.error("Error signing in with Google", error);
     throw error;
   }

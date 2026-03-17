@@ -28,9 +28,8 @@ export const AIFoodEntry = ({ onResult, geminiApiKey }: AIFoodEntryProps) => {
         body: JSON.stringify({ description, geminiApiKey }),
       });
 
-      if (!res.ok) throw new Error("Failed to analyze food");
-
       const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Failed to analyze food");
       const mapped = {
         name: data.name,
         calories: data.calories,
@@ -43,8 +42,8 @@ export const AIFoodEntry = ({ onResult, geminiApiKey }: AIFoodEntryProps) => {
       };
 
       onResult(mapped);
-    } catch (err: any) {
-      toast.error(err.message || "Error analyzing food");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Error analyzing food");
     } finally {
       setLoading(false);
     }

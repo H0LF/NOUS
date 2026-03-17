@@ -56,6 +56,22 @@ export interface SetEntry {
   completed: boolean;
 }
 
+export interface WorkoutTemplate {
+  id: string;
+  userId: string;
+  name: string;
+  exercises: TemplateExercise[];
+  createdAt: string;
+}
+
+export interface TemplateExercise {
+  name: string;
+  sets: number;
+  reps: number;
+  weight: number;
+  restSeconds: number;
+}
+
 export interface FoodItem {
   id: string;
   name: string;
@@ -86,6 +102,13 @@ export interface AITask {
   createdAt: string;
 }
 
+export interface GamificationFeatures {
+  food: boolean;
+  gym: boolean;
+  calendar: boolean;
+  notes: boolean;
+}
+
 export interface UserSettings {
   geminiApiKey: string;
   theme: "dark" | "light";
@@ -93,4 +116,8 @@ export interface UserSettings {
   dailyProteinGoal: number;
   dailyCarbsGoal: number;
   dailyFatGoal: number;
+  /** Master switch — when false the gamification panel is hidden entirely */
+  gamificationEnabled: boolean;
+  /** Per-feature switches — controls whether XP is awarded for each module */
+  gamificationFeatures: GamificationFeatures;
 }

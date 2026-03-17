@@ -74,8 +74,8 @@ export const BarcodeScanner = ({ onResult, onClose }: BarcodeScannerProps) => {
              if (!res.ok) throw new Error("Product not found");
              const data = await res.json();
              onResult({ ...data, source: "barcode" });
-          } catch (e: any) {
-             toast.error(e.message || "Failed to lookup product");
+          } catch (e: unknown) {
+             toast.error(e instanceof Error ? e.message : "Failed to lookup product");
              onClose();
           }
         }

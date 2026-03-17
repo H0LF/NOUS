@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useStore } from "@/store";
 import { db } from "@/lib/firebase";
 import {
@@ -12,61 +13,138 @@ import {
   QueryConstraint,
   DocumentData,
   WithFieldValue,
+  QueryDocumentSnapshot,
 } from "firebase/firestore";
 
+/**
+ * useFirestore
+ *
+ * Provides stable, memoized Firestore CRUD helpers scoped to the
+ * authenticated user's subcollection path: users/{uid}/{col}.
+ *
+ * IMPORTANT: All returned functions are wrapped in useCallback with [user]
+ * as the only dependency. This means their references only change on
+ * login/logout — not on every render. This prevents useEffect dependency
+ * arrays from triggering re-subscriptions on every render, which was the
+ * root cause of ~288K Firestore reads/day.
+ */
 export function useFirestore() {
   const { user } = useStore();
 
-  const getCollectionRef = (col: string) => {
-    if (!user) throw new Error("User not authenticated");
-    return collection(db, "users", user.uid, col);
-  };
+  // ─── Write ───────────────────────────────────────────────────────────────
 
-  const getDocRef = (col: string, id: string) => {
-    if (!user) throw new Error("User not authenticated");
-    return doc(db, "users", user.uid, col, id);
-  };
+  const saveDoc = useCallback(
+    async (col: string, id: string, data: WithFieldValue<DocumentData>) => {
+      if (!user) return;
+      const ref = doc(db, "users", user.uid, col, id);
+      await setDoc(ref, data, { merge: true });
+    },
+    [user],
+  );
 
-  const saveDoc = async (col: string, id: string, data: WithFieldValue<DocumentData>) => {
-    if (!user) return;
-    const ref = getDocRef(col, id);
-    await setDoc(ref, data, { merge: true });
-  };
+  // ─── Read (one-time) ─────────────────────────────────────────────────────
 
-  const getDocById = async (col: string, id: string) => {
-    if (!user) return null;
-    const ref = getDocRef(col, id);
-    const snap = await getDoc(ref);
-    return snap.exists() ? snap.data() : null;
-  };
+  const getDocById = useCallback(
+    async (col: string, id: string): Promise<DocumentData | null> => {
+      if (!user) return null;
+      const ref = doc(db, "users", user.uid, col, id);
+      const snap = await getDoc(ref);
+      return snap.exists() ? snap.data() : null;
+    },
+    [user],
+  );
 
-  const queryDocs = async <T>(col: string, ...queryConstraints: QueryConstraint[]): Promise<T[]> => {
-    if (!user) return [];
-    const ref = getCollectionRef(col);
-    const q = query(ref, ...queryConstraints);
-    const snap = await getDocs(q);
-    return snap.docs.map((d) => d.data() as T);
-  };
+  /**
+   * queryDocs — one-time paginated/filtered read.
+   * Returns the matching documents AND the last DocumentSnapshot so callers
+   * can use it as a cursor for "load more" pagination via startAfter().
+   */
+  const queryDocs = useCallback(
+    async <T>(
+      col: string,
+      ...queryConstraints: QueryConstraint[]
+    ): Promise<T[]> => {
+      if (!user) return [];
+      const ref = collection(db, "users", user.uid, col);
+      const q = query(ref, ...queryConstraints);
+      const snap = await getDocs(q);
+      return snap.docs.map((d) => d.data() as T);
+    },
+    [user],
+  );
 
-  const deleteDocument = async (col: string, id: string) => {
-    if (!user) return;
-    const ref = getDocRef(col, id);
-    await deleteDoc(ref);
-  };
-
-  const subscribeCollection = <T>(
-    col: string,
-    callback: (data: T[]) => void,
-    ...queryConstraints: QueryConstraint[]
-  ) => {
-    if (!user) return () => {};
-    const ref = getCollectionRef(col);
-    const q = query(ref, ...queryConstraints);
-    return onSnapshot(q, (snap) => {
+  /**
+   * queryDocsWithCursor — like queryDocs but also returns the last snapshot
+   * document for cursor-based pagination (startAfter).
+   */
+  const queryDocsWithCursor = useCallback(
+    async <T>(
+      col: string,
+      ...queryConstraints: QueryConstraint[]
+    ): Promise<{ data: T[]; lastDoc: QueryDocumentSnapshot | null }> => {
+      if (!user) return { data: [], lastDoc: null };
+      const ref = collection(db, "users", user.uid, col);
+      const q = query(ref, ...queryConstraints);
+      const snap = await getDocs(q);
       const data = snap.docs.map((d) => d.data() as T);
-      callback(data);
-    });
-  };
+      const lastDoc = snap.docs[snap.docs.length - 1] ?? null;
+      return { data, lastDoc };
+    },
+    [user],
+  );
 
-  return { saveDoc, getDocById, queryDocs, deleteDocument, subscribeCollection };
+  // ─── Delete ──────────────────────────────────────────────────────────────
+
+  const deleteDocument = useCallback(
+    async (col: string, id: string) => {
+      if (!user) return;
+      const ref = doc(db, "users", user.uid, col, id);
+      await deleteDoc(ref);
+    },
+    [user],
+  );
+
+  // ─── Real-time listener ───────────────────────────────────────────────────
+
+  /**
+   * subscribeCollection — opens an onSnapshot real-time listener.
+   *
+   * Returns the unsubscribe function. ALWAYS call it in the useEffect
+   * cleanup: return () => unsub();
+   *
+   * Because this function is memoized with useCallback([user]), its
+   * reference is stable across renders. Safe to include in useEffect
+   * dependency arrays without causing re-subscription loops.
+   */
+  const subscribeCollection = useCallback(
+    <T>(
+      col: string,
+      callback: (data: T[]) => void,
+      ...queryConstraints: QueryConstraint[]
+    ) => {
+      if (!user) return () => {};
+      const ref = collection(db, "users", user.uid, col);
+      const q = query(ref, ...queryConstraints);
+      return onSnapshot(
+        q,
+        (snap) => {
+          const data = snap.docs.map((d) => d.data() as T);
+          callback(data);
+        },
+        (error) => {
+          console.error(`[useFirestore] onSnapshot error on "${col}":`, error);
+        },
+      );
+    },
+    [user],
+  );
+
+  return {
+    saveDoc,
+    getDocById,
+    queryDocs,
+    queryDocsWithCursor,
+    deleteDocument,
+    subscribeCollection,
+  };
 }

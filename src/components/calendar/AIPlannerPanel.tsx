@@ -50,9 +50,10 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
           pdfName: pdf?.name,
         }),
       });
-      if (!response.ok) throw new Error("Failed to generate plan");
-      const tasks: any[] = await response.json();
-      if (!Array.isArray(tasks)) throw new Error("Invalid response format");
+      const body = await response.json();
+      if (!response.ok) throw new Error(body?.error || "Failed to generate plan");
+      const tasks: any[] = body;
+      if (!Array.isArray(tasks)) throw new Error("Unexpected response — try rephrasing your goal");
 
       await Promise.all(tasks.map(async (task: any) => {
         const id = uuidv4();
@@ -65,7 +66,7 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
       onClose();
     } catch (error) {
       console.error(error);
-      toast.error("An error occurred.");
+      toast.error(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -83,11 +84,11 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
 
       {/* Panel */}
       <div className="relative w-full max-w-[340px] h-full flex flex-col animate-slideUp"
-        style={{ background: '#0e0e14', borderLeft: '1px solid rgba(255,255,255,0.06)', boxShadow: '-24px 0 80px rgba(0,0,0,0.6)' }}>
+        style={{ background: 'var(--nous-surface)', borderLeft: '1px solid var(--nous-border)', boxShadow: '-24px 0 80px rgba(0,0,0,0.4)' }}>
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-10 pb-6"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+          style={{ borderBottom: '1px solid var(--nous-border)' }}>
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg flex items-center justify-center"
               style={{ background: 'rgba(124,122,255,0.12)', border: '1px solid rgba(124,122,255,0.2)' }}>
@@ -96,15 +97,15 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
               </svg>
             </div>
             <div>
-              <h2 className="text-[15px] font-semibold" style={{ color: '#e8e8f0', letterSpacing: '-0.01em' }}>Plan with AI</h2>
-              <p className="text-[10px]" style={{ color: '#3a3a50' }}>Powered by Gemini</p>
+              <h2 className="text-[15px] font-semibold" style={{ color: 'var(--nous-primary)', letterSpacing: '-0.01em' }}>Plan with AI</h2>
+              <p className="text-[10px]" style={{ color: 'var(--nous-secondary)' }}>Powered by Gemini</p>
             </div>
           </div>
           <button onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
-            style={{ color: '#3a3a50', background: 'rgba(255,255,255,0.03)' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#e8e8f0')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#3a3a50')}>
+            style={{ color: 'var(--nous-secondary)', background: 'rgba(255,255,255,0.03)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--nous-primary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--nous-secondary)')}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
@@ -113,7 +114,7 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-6" style={{ scrollbarWidth: 'none' }}>
-          <p className="text-[12px] leading-relaxed mb-5" style={{ color: '#4a4a5e' }}>
+          <p className="text-[12px] leading-relaxed mb-5" style={{ color: 'var(--nous-secondary)' }}>
             Describe your goal or attach a PDF (syllabus, notes, exam sheet) and AI will build a study schedule around your classes.
           </p>
 
@@ -131,14 +132,14 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-medium truncate" style={{ color: '#e8e8f0' }}>{pdf.name}</p>
+                <p className="text-[12px] font-medium truncate" style={{ color: 'var(--nous-primary)' }}>{pdf.name}</p>
                 <p className="text-[10px]" style={{ color: '#7c7aff' }}>Ready to analyse</p>
               </div>
               <button onClick={() => { setPdf(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
                 className="w-5 h-5 flex items-center justify-center rounded-full transition-colors shrink-0"
-                style={{ color: '#3a3a50' }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#3a3a50')}>
+                style={{ color: 'var(--nous-secondary)' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--nous-error)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'var(--nous-secondary)')}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
@@ -152,15 +153,15 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.02)'; }}>
               <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                 style={{ background: 'rgba(255,255,255,0.03)' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3a3a50" strokeWidth="2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--nous-secondary)" strokeWidth="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                   <polyline points="17 8 12 3 7 8"/>
                   <line x1="12" y1="3" x2="12" y2="15"/>
                 </svg>
               </div>
               <div className="text-left">
-                <p className="text-[12px] font-medium" style={{ color: '#4a4a5e' }}>Attach PDF</p>
-                <p className="text-[10px]" style={{ color: '#2e2e40' }}>Syllabus, notes, exam sheet · max 20 MB</p>
+                <p className="text-[12px] font-medium" style={{ color: 'var(--nous-secondary)' }}>Attach PDF</p>
+                <p className="text-[10px]" style={{ color: 'var(--nous-tertiary)' }}>Syllabus, notes, exam sheet · max 20 MB</p>
               </div>
             </button>
           )}
@@ -168,7 +169,7 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
           {/* Divider */}
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.04)' }}/>
-            <span className="text-[10px]" style={{ color: '#2e2e40' }}>and / or</span>
+            <span className="text-[10px]" style={{ color: 'var(--nous-tertiary)' }}>and / or</span>
             <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.04)' }}/>
           </div>
 
@@ -187,7 +188,7 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
 
           <textarea
             className="w-full h-28 px-4 py-3 rounded-xl text-[13px] outline-none resize-none transition-all"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', color: '#e8e8f0', lineHeight: 1.6 }}
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', color: 'var(--nous-primary)', lineHeight: 1.6 }}
             placeholder="e.g. Exam on March 15 covering chapters 1–5..."
             value={goal}
             onChange={e => setGoal(e.target.value)}
@@ -197,16 +198,16 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
 
           {weeklyEvents.length > 0 && (
             <div className="mt-4 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-              <p className="text-[9px] font-bold tracking-[0.12em] uppercase mb-2" style={{ color: '#2e2e40' }}>
+              <p className="text-[9px] font-bold tracking-[0.12em] uppercase mb-2" style={{ color: 'var(--nous-tertiary)' }}>
                 Working around {weeklyEvents.length} class{weeklyEvents.length !== 1 ? "es" : ""}
               </p>
               {weeklyEvents.slice(0, 3).map(e => (
                 <div key={e.id} className="flex items-center gap-2 py-1">
                   <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: e.color || '#7c7aff' }} />
-                  <span className="text-[11px] truncate" style={{ color: '#4a4a5e' }}>{e.title}</span>
+                  <span className="text-[11px] truncate" style={{ color: 'var(--nous-secondary)' }}>{e.title}</span>
                 </div>
               ))}
-              {weeklyEvents.length > 3 && <p className="text-[10px] mt-1" style={{ color: '#2e2e40' }}>+{weeklyEvents.length - 3} more</p>}
+              {weeklyEvents.length > 3 && <p className="text-[10px] mt-1" style={{ color: 'var(--nous-tertiary)' }}>+{weeklyEvents.length - 3} more</p>}
             </div>
           )}
         </div>
@@ -219,7 +220,7 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
             className="w-full h-11 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
             style={{
               background: loading || (!goal.trim() && !pdf) ? 'rgba(124,122,255,0.1)' : 'linear-gradient(135deg, #7c7aff, #5e5ce6)',
-              color: loading || (!goal.trim() && !pdf) ? '#4a4a5e' : '#fff',
+              color: loading || (!goal.trim() && !pdf) ? 'var(--nous-secondary)' : '#fff',
               boxShadow: loading || (!goal.trim() && !pdf) ? 'none' : '0 4px 20px rgba(124,122,255,0.35)',
               cursor: loading || (!goal.trim() && !pdf) ? 'not-allowed' : 'pointer',
             }}>

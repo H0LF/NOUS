@@ -53,7 +53,7 @@ export const FolderTree = ({ className = "" }: FolderTreeProps) => {
 
   const itemStyle = (active: boolean) => ({
     background: active ? 'rgba(124,122,255,0.1)' : 'transparent',
-    color: active ? '#a5a3ff' : '#4a4a5e',
+    color: active ? '#a5a3ff' : 'var(--nous-secondary)',
     borderRadius: '6px',
     padding: '5px 8px',
     cursor: 'pointer',
@@ -98,7 +98,7 @@ export const FolderTree = ({ className = "" }: FolderTreeProps) => {
             style={{
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(124,122,255,0.3)',
-              color: '#e8e8f0',
+              color: 'var(--nous-primary)',
             }}
           />
         </form>
@@ -109,7 +109,7 @@ export const FolderTree = ({ className = "" }: FolderTreeProps) => {
         style={itemStyle(selectedFolderId === null)}
         onClick={() => setSelectedFolderId(null)}
         onMouseEnter={e => { if (selectedFolderId !== null) (e.currentTarget as HTMLElement).style.color = '#c8c8d8'; }}
-        onMouseLeave={e => { if (selectedFolderId !== null) (e.currentTarget as HTMLElement).style.color = '#4a4a5e'; }}
+        onMouseLeave={e => { if (selectedFolderId !== null) (e.currentTarget as HTMLElement).style.color = 'var(--nous-secondary)'; }}
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
@@ -127,7 +127,7 @@ export const FolderTree = ({ className = "" }: FolderTreeProps) => {
             onClick={() => setSelectedFolderId(folder.id)}
             onContextMenu={e => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, folder }); }}
             onMouseEnter={e => { if (selectedFolderId !== folder.id) (e.currentTarget as HTMLElement).style.color = '#c8c8d8'; }}
-            onMouseLeave={e => { if (selectedFolderId !== folder.id) (e.currentTarget as HTMLElement).style.color = '#4a4a5e'; }}
+            onMouseLeave={e => { if (selectedFolderId !== folder.id) (e.currentTarget as HTMLElement).style.color = 'var(--nous-secondary)'; }}
           >
             <span className="w-2 h-2 rounded-full shrink-0" style={{ background: folder.color }} />
             <span className="truncate">{folder.name}</span>

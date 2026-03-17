@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useFirestore } from "@/hooks/useFirestore";
 import { useStore } from "@/store";
 import { GymSession, ExerciseEntry } from "@/types";
-import { limit, orderBy, where } from "firebase/firestore";
+import { limit, orderBy } from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 
 interface WorkoutSelectorProps {
@@ -111,27 +111,27 @@ export const WorkoutSelector = ({ onSelect }: WorkoutSelectorProps) => {
   const [lastSessions, setLastSessions] = useState<Record<string, GymSession>>({});
   const [loadingType, setLoadingType] = useState<string | null>(null);
 
-  // Fetch last session per workout type on mount
+  // Fetch recent sessions once, then pick the latest per preset type in memory
   useEffect(() => {
     if (!user) return;
     const fetchHistory = async () => {
-      const results: Record<string, GymSession> = {};
-      for (const preset of PRESETS) {
-        try {
-          const history = await queryDocs<GymSession>(
-            "gym_sessions",
-            where("workoutType", "==", preset.type),
-            orderBy("date", "desc"),
-            limit(1),
-          );
-          if (history && history.length > 0) {
-            results[preset.type] = history[0];
+      try {
+        const sessions = await queryDocs<GymSession>(
+          "gym_sessions",
+          orderBy("date", "desc"),
+          limit(50),
+        );
+        const results: Record<string, GymSession> = {};
+        for (const session of sessions) {
+          // Keep only the first (most recent) session per type
+          if (!results[session.workoutType]) {
+            results[session.workoutType] = session;
           }
-        } catch {
-          // Ignore — no history for this type
         }
+        setLastSessions(results);
+      } catch {
+        // ignore
       }
-      setLastSessions(results);
     };
     fetchHistory();
   }, [user, queryDocs]);

@@ -287,8 +287,8 @@ export default function ImportPage() {
 
         await saveDoc("events", event.id, event);
         addLog(`[OK] ${event.title} — ${classType} (${e.date} ${e.startTime})`);
-      } catch (err: any) {
-        addLog(`[FAIL] ${e.title} — ${err.message}`);
+      } catch (err: unknown) {
+        addLog(`[FAIL] ${e.title} — ${err instanceof Error ? err.message : "Unknown error"}`);
       }
       setProgress(i + 1);
     }
@@ -300,20 +300,20 @@ export default function ImportPage() {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center p-8"
-      style={{ background: "#0d0d12" }}
+      style={{ background: "var(--nous-bg)" }}
     >
       <div
         className="w-full max-w-xl rounded-2xl p-8 flex flex-col gap-6"
         style={{
-          background: "#13131a",
-          border: "1px solid rgba(255,255,255,0.06)",
+          background: "var(--nous-surface)",
+          border: "1px solid var(--nous-border)",
         }}
       >
         <div>
-          <h1 className="text-xl font-bold" style={{ color: "#e8e8f0" }}>
+          <h1 className="text-xl font-bold" style={{ color: "var(--nous-primary)" }}>
             Import Calendar Events
           </h1>
-          <p className="text-[13px] mt-1" style={{ color: "#4a4a5e" }}>
+          <p className="text-[13px] mt-1" style={{ color: "var(--nous-secondary)" }}>
             This will import {IMPORT_DATA.events.length} weekly class events
             into your calendar.
           </p>
@@ -322,17 +322,17 @@ export default function ImportPage() {
         {/* Preview */}
         <div
           className="rounded-xl overflow-hidden"
-          style={{ border: "1px solid rgba(255,255,255,0.05)" }}
+          style={{ border: "1px solid var(--nous-border)" }}
         >
           <div
             className="px-4 py-2 text-[10px] font-semibold uppercase tracking-widest"
-            style={{ background: "rgba(124,122,255,0.08)", color: "#7c7aff" }}
+            style={{ background: "rgba(124,122,255,0.08)", color: "var(--nous-accent)" }}
           >
             Events to import
           </div>
           <div
             className="divide-y"
-            style={{ borderColor: "rgba(255,255,255,0.04)" } as React.CSSProperties}
+            style={{ borderColor: "var(--nous-border)" } as React.CSSProperties}
           >
             {IMPORT_DATA.events.map((e: any) => (
               <div key={e.id} className="flex items-center gap-3 px-4 py-2.5">
@@ -342,16 +342,16 @@ export default function ImportPage() {
                 />
                 <span
                   className="text-[13px] font-medium flex-1"
-                  style={{ color: "#c8c8d8" }}
+                  style={{ color: "var(--nous-primary)" }}
                 >
                   {e.title}
                 </span>
-                <span className="text-[11px]" style={{ color: "#4a4a5e" }}>
+                <span className="text-[11px]" style={{ color: "var(--nous-secondary)" }}>
                   {subtypeMap[(e.subtype || "").toLowerCase()] || e.subtype}
                 </span>
                 <span
                   className="text-[11px] font-mono"
-                  style={{ color: "#3a3a50" }}
+                  style={{ color: "var(--nous-tertiary)" }}
                 >
                   {e.startTime}
                 </span>
@@ -365,17 +365,17 @@ export default function ImportPage() {
           <div>
             <div
               className="h-1.5 rounded-full overflow-hidden"
-              style={{ background: "rgba(255,255,255,0.06)" }}
+              style={{ background: "var(--nous-border)" }}
             >
               <div
                 className="h-full rounded-full transition-all duration-300"
                 style={{
                   width: `${(progress / IMPORT_DATA.events.length) * 100}%`,
-                  background: "#7c7aff",
+                  background: "var(--nous-accent)",
                 }}
               />
             </div>
-            <p className="text-[11px] mt-1.5" style={{ color: "#4a4a5e" }}>
+            <p className="text-[11px] mt-1.5" style={{ color: "var(--nous-secondary)" }}>
               {progress} / {IMPORT_DATA.events.length}
             </p>
           </div>
@@ -386,9 +386,9 @@ export default function ImportPage() {
           <div
             className="rounded-xl p-4 font-mono text-[11px] max-h-48 overflow-y-auto"
             style={{
-              background: "#0a0a10",
-              border: "1px solid rgba(255,255,255,0.04)",
-              color: "#6a6a7e",
+              background: "var(--nous-bg)",
+              border: "1px solid var(--nous-border)",
+              color: "var(--nous-secondary)",
             }}
           >
             {log.map((l, i) => (
@@ -433,7 +433,7 @@ export default function ImportPage() {
         )}
 
         {!user && (
-          <p className="text-[12px] text-center" style={{ color: "#f87171" }}>
+          <p className="text-[12px] text-center" style={{ color: "var(--nous-error)" }}>
             You must be logged in to import events.
           </p>
         )}

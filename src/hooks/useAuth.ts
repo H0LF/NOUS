@@ -18,7 +18,13 @@ export function useAuth() {
   const signInWithGoogle = async () => {
     try {
       await firebaseSignInWithGoogle();
-    } catch (error) {
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        (error as { code?: string }).code === "auth/popup-closed-by-user"
+      ) {
+        return; // User dismissed the popup — nothing to do
+      }
       console.error("Login failed", error);
       throw error;
     }

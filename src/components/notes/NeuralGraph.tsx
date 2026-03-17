@@ -38,7 +38,11 @@ const FOLDER_COLORS = [
   "#c084fc",
   "#38bdf8",
 ];
-const BG = "#0d0d12";
+// Resolved at render time so it tracks the current theme
+function getCSSVar(name: string): string {
+  if (typeof window === "undefined") return "#0d0d12";
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "#0d0d12";
+}
 
 export const NeuralGraph = ({
   notes,
@@ -223,12 +227,12 @@ export const NeuralGraph = ({
 
     let frame = 0;
 
-    const drawGrid = (W: number, H: number) => {
+    const drawGrid = (W: number, H: number, darkMode: boolean) => {
       const cam = camRef.current;
       const gridSize = 40 * cam.zoom;
       const offsetX = ((cam.x % gridSize) + gridSize) % gridSize;
       const offsetY = ((cam.y % gridSize) + gridSize) % gridSize;
-      ctx.strokeStyle = "rgba(255,255,255,0.025)";
+      ctx.strokeStyle = darkMode ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.06)";
       ctx.lineWidth = 0.5;
       for (let x = offsetX; x < W; x += gridSize) {
         ctx.beginPath();
@@ -252,7 +256,7 @@ export const NeuralGraph = ({
       if (W > 0 && H > 0) {
         const curNotes = notesRef.current;
         const curFolders = foldersRef.current;
-        const key = curNotes.map(n => n.id).join(",") + "|" + curFolders.map(f => f.id).join(",");
+        const key = curNotes.map(n => `${n.id}:${n.folderId ?? ""}`).join(",") + "|" + curFolders.map(f => `${f.id}:${f.parentId ?? ""}`).join(",");
         if (key !== builtKeyRef.current) {
           builtKeyRef.current = key;
           buildGraph(W, H, curNotes, curFolders);
@@ -305,14 +309,25 @@ export const NeuralGraph = ({
         n.pulse += 0.025;
       });
 
+      const bg = getCSSVar("--nous-bg");
+      // Detect light/dark mode from background luminance
+      const bgHex = bg.replace("#", "");
+      const bgR = parseInt(bgHex.slice(0, 2), 16) || 0;
+      const bgG = parseInt(bgHex.slice(2, 4), 16) || 0;
+      const bgB = parseInt(bgHex.slice(4, 6), 16) || 0;
+      const darkMode = (bgR * 0.299 + bgG * 0.587 + bgB * 0.114) < 128;
+
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = BG;
+      ctx.fillStyle = bg;
       ctx.fillRect(0, 0, W, H);
-      drawGrid(W, H);
+      drawGrid(W, H, darkMode);
 
       ctx.save();
       ctx.translate(cam.x, cam.y);
       ctx.scale(cam.zoom, cam.zoom);
+
+      // Theme-aware edge base color (white on dark, dark on light)
+      const edgeBase = darkMode ? "255,255,255" : "0,0,0";
 
       edges.forEach((edge) => {
         const src = nodes.find((n) => n.id === edge.source);
@@ -327,23 +342,11 @@ export const NeuralGraph = ({
 
         const grad = ctx.createLinearGradient(src.x, src.y, tgt.x, tgt.y);
         if (isAct) {
-          grad.addColorStop(
-            0,
-            isExplicit ? "rgba(124,122,255,0.7)" : "rgba(255,255,255,0.22)",
-          );
-          grad.addColorStop(
-            1,
-            isExplicit ? "rgba(96,165,250,0.7)" : "rgba(255,255,255,0.22)",
-          );
+          grad.addColorStop(0, isExplicit ? "rgba(124,122,255,0.8)" : `rgba(${edgeBase},0.28)`);
+          grad.addColorStop(1, isExplicit ? "rgba(96,165,250,0.8)" : `rgba(${edgeBase},0.28)`);
         } else {
-          grad.addColorStop(
-            0,
-            isExplicit ? "rgba(124,122,255,0.22)" : "rgba(255,255,255,0.055)",
-          );
-          grad.addColorStop(
-            1,
-            isExplicit ? "rgba(96,165,250,0.22)" : "rgba(255,255,255,0.055)",
-          );
+          grad.addColorStop(0, isExplicit ? "rgba(124,122,255,0.3)" : `rgba(${edgeBase},0.1)`);
+          grad.addColorStop(1, isExplicit ? "rgba(96,165,250,0.3)" : `rgba(${edgeBase},0.1)`);
         }
         ctx.beginPath();
         ctx.moveTo(src.x, src.y);
@@ -375,19 +378,9 @@ export const NeuralGraph = ({
 
         if (isActive || isHovered || node.isFolder) {
           const glowR = r + (node.isFolder ? 14 : 9) + pulseAmp * 3;
-          const grd = ctx.createRadialGradient(
-            node.x,
-            node.y,
-            r * 0.5,
-            node.x,
-            node.y,
-            glowR,
-          );
-          grd.addColorStop(
-            0,
-            isActive ? "rgba(124,122,255,0.4)" : baseColor + "28",
-          );
-          grd.addColorStop(1, "rgba(0,0,0,0)");
+          const grd = ctx.createRadialGradient(node.x, node.y, r * 0.5, node.x, node.y, glowR);
+          grd.addColorStop(0, isActive ? "rgba(124,122,255,0.45)" : baseColor + "38");
+          grd.addColorStop(1, baseColor + "00"); // color-matched transparent — no black bleed
           ctx.beginPath();
           ctx.arc(node.x, node.y, glowR, 0, Math.PI * 2);
           ctx.fillStyle = grd;
@@ -396,16 +389,9 @@ export const NeuralGraph = ({
 
         if (node.isFolder) {
           const haloR = r + 20 + pulseAmp * 4;
-          const halo = ctx.createRadialGradient(
-            node.x,
-            node.y,
-            r,
-            node.x,
-            node.y,
-            haloR,
-          );
-          halo.addColorStop(0, baseColor + "18");
-          halo.addColorStop(1, "rgba(0,0,0,0)");
+          const halo = ctx.createRadialGradient(node.x, node.y, r, node.x, node.y, haloR);
+          halo.addColorStop(0, baseColor + "22");
+          halo.addColorStop(1, baseColor + "00"); // color-matched transparent
           ctx.beginPath();
           ctx.arc(node.x, node.y, haloR, 0, Math.PI * 2);
           ctx.fillStyle = halo;
@@ -448,18 +434,19 @@ export const NeuralGraph = ({
         if (node.isFolder || isActive || isHovered || r > 8) {
           const fontSize = node.isFolder ? 10 : 9;
           ctx.font = `${isActive || node.isFolder ? "600" : "400"} ${fontSize}px -apple-system, sans-serif`;
+          const primaryColor = getCSSVar("--nous-primary");
           ctx.fillStyle = isActive
             ? "#ffffff"
             : node.isFolder
-              ? "#e8e8f0"
-              : "rgba(255,255,255,0.55)";
+              ? primaryColor
+              : "rgba(128,128,160,0.7)";
           ctx.textAlign = "center";
           ctx.textBaseline = "top";
           const label =
             node.label.length > 15
               ? node.label.slice(0, 14) + "\u2026"
               : node.label;
-          ctx.shadowColor = BG;
+          ctx.shadowColor = bg;
           ctx.shadowBlur = 4;
           ctx.fillText(label, node.x, node.y + r + 5, 96);
           ctx.shadowBlur = 0;
@@ -645,7 +632,7 @@ export const NeuralGraph = ({
   }, []);
 
   return (
-    <div className="relative w-full h-full" style={{ background: BG }}>
+    <div className="relative w-full h-full" style={{ background: "var(--nous-bg)" }}>
       {notes.length === 0 && (
         <div
           className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3"
@@ -672,7 +659,7 @@ export const NeuralGraph = ({
               <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
             </svg>
           </div>
-          <p className="text-[11px] font-medium" style={{ color: "#3a3a50" }}>
+          <p className="text-[11px] font-medium" style={{ color: "var(--nous-secondary)" }}>
             Create notes to build your graph
           </p>
         </div>
@@ -780,9 +767,9 @@ export const NeuralGraph = ({
           style={{
             left: tooltip.x,
             top: tooltip.y,
-            background: "rgba(22,22,32,0.97)",
+            background: "var(--nous-surface)",
             border: "1px solid rgba(124,122,255,0.3)",
-            color: "#e8e8f0",
+            color: "var(--nous-primary)",
             transform: "translateX(-50%)",
             boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
           }}

@@ -24,27 +24,32 @@ export const MacroSummary = ({ totals, goals }: MacroSummaryProps) => {
   ];
 
   return (
-    <div className="bg-nous-surface/30 border border-nous-border rounded-xl p-4 flex gap-4">
-        <div className="flex-shrink-0">
-            <CalorieRing consumed={totals.calories} goal={goals.dailyCalorieGoal} />
-        </div>
-        
-        <div className="flex-1 flex flex-col justify-center gap-3">
-            {macros.map(m => (
-                <div key={m.label}>
-                    <div className="flex justify-between text-xs mb-1">
-                        <span className="font-medium text-nous-primary">{m.label}</span>
-                        <span className="text-nous-secondary">{Math.round(m.value)} / {m.goal}{m.unit}</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-nous-surface rounded-full overflow-hidden">
-                        <div 
-                            className={`h-full rounded-full transition-all duration-500 ${m.color}`}
-                            style={{ width: `${getProgress(m.value, m.goal)}%` }}
-                        />
-                    </div>
-                </div>
-            ))}
-        </div>
+    <div
+      className="rounded-xl p-4 flex gap-5 items-center"
+      style={{ background: "var(--nous-surface)", border: "1px solid var(--nous-border)" }}
+    >
+      <div className="shrink-0">
+        <CalorieRing consumed={totals.calories} goal={goals.dailyCalorieGoal} />
+      </div>
+
+      <div className="flex-1 flex flex-col justify-center gap-2.5">
+        {macros.map((m) => (
+          <div key={m.label}>
+            <div className="flex justify-between text-[12px] mb-1">
+              <span className="font-medium" style={{ color: "var(--nous-primary)" }}>{m.label}</span>
+              <span style={{ color: "var(--nous-secondary)" }}>
+                {Math.round(m.value)}<span style={{ color: "var(--nous-tertiary)" }}>/{m.goal}{m.unit}</span>
+              </span>
+            </div>
+            <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "var(--nous-bg)" }}>
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${m.color}`}
+                style={{ width: `${getProgress(m.value, m.goal)}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

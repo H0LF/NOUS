@@ -10,6 +10,13 @@ const DEFAULT_SETTINGS: UserSettings = {
   dailyProteinGoal: 150,
   dailyCarbsGoal: 250,
   dailyFatGoal: 65,
+  gamificationEnabled: true,
+  gamificationFeatures: {
+    food: true,
+    gym: true,
+    calendar: true,
+    notes: true,
+  },
 };
 
 export function useSettings() {
