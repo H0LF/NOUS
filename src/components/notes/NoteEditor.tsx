@@ -5,14 +5,21 @@ import { useFirestore } from "@/hooks/useFirestore";
 import { useStore } from "@/store";
 import { format } from "date-fns";
 
-function useDebounce(callback: (...args: any[]) => void, delay: number) {
+/**
+ * useDebounce — returns a stable debounced wrapper that always calls the
+ * latest version of `callback`. The returned function's identity only
+ * changes when `delay` changes, preventing dependency-chain instability.
+ */
+function useDebounce<T extends (...args: never[]) => void>(callback: T, delay: number) {
+  const callbackRef = useRef(callback);
+  callbackRef.current = callback;
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   return useCallback(
-    (...args: any[]) => {
+    (...args: Parameters<T>) => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => callback(...args), delay);
+      timeoutRef.current = setTimeout(() => callbackRef.current(...args), delay);
     },
-    [callback, delay],
+    [delay],
   );
 }
 
@@ -285,7 +292,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
   // Read shared data from the store (populated by useAppData in the layout).
   // No local Firestore subscription needed.
   const { openNoteId, setOpenNoteId, user, allNotes } = useStore();
-  const { getDocById, saveDoc } = useFirestore();
+  const { saveDoc } = useFirestore();
   const [note, setNote] = useState<Note | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -318,6 +325,9 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
     );
   }, [allNotes, openNoteId]);
 
+  // Load note data from the shared store instead of a separate Firestore
+  // getDocById call. The allNotes array is kept up-to-date by the real-time
+  // listener in useAppData, so this eliminates 1 Firestore read per note switch.
   useEffect(() => {
     if (!user || !openNoteId) {
       setNote(null);
@@ -326,19 +336,16 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
     if (lastNoteId.current === openNoteId) return;
     lastNoteId.current = openNoteId;
     setWikilinkSearch(null);
-    const load = async () => {
-      const data = (await getDocById("notes", openNoteId)) as Note;
-      if (data) {
-        setNote(data);
-        setTitle(data.title);
-        setContent(data.content);
-        setDrawing(data.drawing);
-        if (titleRef.current) titleRef.current.innerText = data.title;
-        if (contentRef.current) contentRef.current.innerHTML = data.content;
-      }
-    };
-    load();
-  }, [openNoteId, user, getDocById]);
+    const data = allNotes.find((n) => n.id === openNoteId) ?? null;
+    if (data) {
+      setNote(data);
+      setTitle(data.title);
+      setContent(data.content);
+      setDrawing(data.drawing);
+      if (titleRef.current) titleRef.current.innerText = data.title;
+      if (contentRef.current) contentRef.current.innerHTML = data.content;
+    }
+  }, [openNoteId, user, allNotes]);
 
   const saveNote = async (
     newTitle: string,

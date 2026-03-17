@@ -29,13 +29,11 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-let analytics;
+// Initialize analytics lazily on the client — fire-and-forget, no export needed.
 if (typeof window !== "undefined") {
   import("firebase/analytics").then(({ getAnalytics, isSupported }) => {
     isSupported().then((supported) => {
-      if (supported) {
-        analytics = getAnalytics(app);
-      }
+      if (supported) getAnalytics(app);
     });
   });
 }

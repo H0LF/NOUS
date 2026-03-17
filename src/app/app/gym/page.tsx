@@ -12,6 +12,7 @@ import { ExercisePicker } from "@/components/gym/ExercisePicker";
 import { Button } from "@/components/ui/Button";
 import { GymSession, ExerciseEntry, SetEntry, TemplateExercise } from "@/types";
 import { ExerciseInfo } from "@/lib/exercises";
+import { formatStopwatch } from "@/lib/format";
 import { orderBy, limit } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
 import toast from "react-hot-toast";
@@ -49,15 +50,6 @@ export default function GymPage() {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [activeWorkoutType, setStopwatchSeconds]);
-
-  const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h > 0)
-      return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-  };
 
   const recentSessionsRef = useRef<GymSession[] | null>(null);
 
@@ -204,7 +196,7 @@ export default function GymPage() {
           <div className="flex items-center gap-2 bg-nous-surface/50 border border-nous-border rounded-full px-3.5 py-1.5">
             <div className="w-2 h-2 rounded-full bg-nous-accent animate-pulse" />
             <span className="font-mono text-sm font-semibold text-nous-accent">
-              {formatTime(stopwatchSeconds)}
+              {formatStopwatch(stopwatchSeconds)}
             </span>
           </div>
         )}

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { GymSession } from "@/types";
 import { useFirestore } from "@/hooks/useFirestore";
 import { useStore } from "@/store";
+import { formatDuration } from "@/lib/format";
 import { format } from "date-fns";
 import { orderBy, limit, startAfter, QueryDocumentSnapshot } from "firebase/firestore";
 
@@ -62,14 +63,6 @@ export const WorkoutHistory = () => {
   }, [cursor, loadingMore, queryDocsWithCursor]);
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
-
-  const formatDuration = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h > 0) return `${h}h ${m}m`;
-    return `${m}m ${s}s`;
-  };
 
   const calculateVolume = (session: GymSession) =>
     session.exercises.reduce(

@@ -53,12 +53,16 @@ export default function CalendarPage() {
     const endTotal = sh * 60 + sm + Math.max(duration, 30);
     const newEndTime = `${String(Math.floor(endTotal / 60) % 24).padStart(2, "0")}:${String(endTotal % 60).padStart(2, "0")}`;
 
-    await saveDoc("events", event.id, {
-      startTime: newStartTime,
-      endTime: newEndTime,
-      date: getSlotDate(newDayIndex),
-      dayOfWeek: addDays(monday, newDayIndex).getDay(),
-    });
+    try {
+      await saveDoc("events", event.id, {
+        startTime: newStartTime,
+        endTime: newEndTime,
+        date: getSlotDate(newDayIndex),
+        dayOfWeek: addDays(monday, newDayIndex).getDay(),
+      });
+    } catch (err) {
+      console.error("[CalendarPage] Failed to move event:", err);
+    }
   };
 
   // ── Calendar → Notes deep-link ─────────────────────────────────────────────

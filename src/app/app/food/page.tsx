@@ -75,17 +75,28 @@ export default function FoodPage() {
     const newItem = { ...item, meal };
     const updatedLog = { ...todayLog, items: [...todayLog.items, newItem] };
     setTodayLog(updatedLog);
-    await saveDoc("food_logs", todayLog.id, updatedLog);
+    try {
+      await saveDoc("food_logs", todayLog.id, updatedLog);
+    } catch (err) {
+      console.error("[FoodPage] Failed to save food item:", err);
+      setTodayLog(todayLog); // rollback optimistic update
+    }
   };
 
   const handleDeleteFood = async (itemId: string) => {
     if (!todayLog) return;
+    const previousLog = todayLog;
     const updatedLog = {
       ...todayLog,
       items: todayLog.items.filter((i) => i.id !== itemId),
     };
     setTodayLog(updatedLog);
-    await saveDoc("food_logs", todayLog.id, updatedLog);
+    try {
+      await saveDoc("food_logs", todayLog.id, updatedLog);
+    } catch (err) {
+      console.error("[FoodPage] Failed to delete food item:", err);
+      setTodayLog(previousLog); // rollback optimistic update
+    }
   };
 
   // ── Macro totals ───────────────────────────────────────────────────────────

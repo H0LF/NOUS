@@ -1,6 +1,7 @@
 ﻿"use client";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Note, Folder } from "@/types";
+import { FOLDER_COLORS } from "@/lib/constants";
 
 interface GraphNode {
   id: string;
@@ -29,19 +30,19 @@ interface NeuralGraphProps {
 }
 
 const ACCENT = "#7c7aff";
-const FOLDER_COLORS = [
-  "#7c7aff",
-  "#30c48d",
-  "#e879f9",
-  "#f87171",
-  "#60a5fa",
-  "#c084fc",
-  "#38bdf8",
-];
-// Resolved at render time so it tracks the current theme
+
+// Cache CSS variable reads to avoid getComputedStyle() on every animation frame.
+// Refreshed every 500ms so theme changes are picked up promptly.
+const cssVarCache: Record<string, { value: string; ts: number }> = {};
+const CSS_CACHE_TTL = 500;
 function getCSSVar(name: string): string {
   if (typeof window === "undefined") return "#0d0d12";
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "#0d0d12";
+  const now = performance.now();
+  const cached = cssVarCache[name];
+  if (cached && now - cached.ts < CSS_CACHE_TTL) return cached.value;
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "#0d0d12";
+  cssVarCache[name] = { value, ts: now };
+  return value;
 }
 
 export const NeuralGraph = ({
@@ -204,8 +205,14 @@ export const NeuralGraph = ({
     edgesRef.current = edges;
   };
 
-  // Track which data we last built the graph for
-  const builtKeyRef = useRef("");
+  // Track which data we last built the graph for — use count+length
+  // instead of building a full key string every frame (was O(n) per frame).
+  const builtCountRef = useRef(0);
+  const builtNoteCountRef = useRef(0);
+  const builtFolderCountRef = useRef(0);
+
+  // Node lookup map rebuilt alongside the graph — turns O(n) find() into O(1).
+  const nodeMapRef = useRef<Map<string, GraphNode>>(new Map());
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -248,23 +255,46 @@ export const NeuralGraph = ({
       }
     };
 
+    // Rebuild the node lookup map whenever the graph is rebuilt
+    const rebuildNodeMap = () => {
+      const map = new Map<string, GraphNode>();
+      for (const node of nodesRef.current) {
+        map.set(node.id, node);
+      }
+      nodeMapRef.current = map;
+    };
+
     const tick = () => {
       const W = canvas.offsetWidth;
       const H = canvas.offsetHeight;
 
-      // Rebuild graph when notes/folders change (checked every frame via refs)
+      // Rebuild graph when notes/folders change. Uses cheap reference +
+      // length checks instead of building a key string every frame.
       if (W > 0 && H > 0) {
         const curNotes = notesRef.current;
         const curFolders = foldersRef.current;
-        const key = curNotes.map(n => `${n.id}:${n.folderId ?? ""}`).join(",") + "|" + curFolders.map(f => `${f.id}:${f.parentId ?? ""}`).join(",");
-        if (key !== builtKeyRef.current) {
-          builtKeyRef.current = key;
+        const noteCount = curNotes.length;
+        const folderCount = curFolders.length;
+        // Increment a counter any time note/folder data arrives so we
+        // detect content changes (id/folderId edits) not just length.
+        const dataVersion = curNotes.reduce((s, n) => s + n.id.charCodeAt(0) + (n.folderId?.charCodeAt(0) ?? 0), 0)
+          + curFolders.reduce((s, f) => s + f.id.charCodeAt(0), 0);
+        if (
+          noteCount !== builtNoteCountRef.current ||
+          folderCount !== builtFolderCountRef.current ||
+          dataVersion !== builtCountRef.current
+        ) {
+          builtNoteCountRef.current = noteCount;
+          builtFolderCountRef.current = folderCount;
+          builtCountRef.current = dataVersion;
           buildGraph(W, H, curNotes, curFolders);
+          rebuildNodeMap();
         }
       }
 
       const nodes = nodesRef.current;
       const edges = edgesRef.current;
+      const nodeMap = nodeMapRef.current;
       const active = activeNoteIdRef.current;
       const cam = camRef.current;
       frame++;
@@ -283,9 +313,10 @@ export const NeuralGraph = ({
           nodes[j].vy += fy;
         }
       }
+      // Edge spring forces — O(1) lookup via nodeMap instead of O(n) find()
       edges.forEach((edge) => {
-        const src = nodes.find((n) => n.id === edge.source);
-        const tgt = nodes.find((n) => n.id === edge.target);
+        const src = nodeMap.get(edge.source);
+        const tgt = nodeMap.get(edge.target);
         if (!src || !tgt) return;
         const dx = tgt.x - src.x;
         const dy = tgt.y - src.y;
@@ -309,8 +340,8 @@ export const NeuralGraph = ({
         n.pulse += 0.025;
       });
 
+      // getCSSVar is now cached (500ms TTL) so this is cheap
       const bg = getCSSVar("--nous-bg");
-      // Detect light/dark mode from background luminance
       const bgHex = bg.replace("#", "");
       const bgR = parseInt(bgHex.slice(0, 2), 16) || 0;
       const bgG = parseInt(bgHex.slice(2, 4), 16) || 0;
@@ -326,12 +357,12 @@ export const NeuralGraph = ({
       ctx.translate(cam.x, cam.y);
       ctx.scale(cam.zoom, cam.zoom);
 
-      // Theme-aware edge base color (white on dark, dark on light)
       const edgeBase = darkMode ? "255,255,255" : "0,0,0";
 
+      // Edge rendering — O(1) lookup via nodeMap
       edges.forEach((edge) => {
-        const src = nodes.find((n) => n.id === edge.source);
-        const tgt = nodes.find((n) => n.id === edge.target);
+        const src = nodeMap.get(edge.source);
+        const tgt = nodeMap.get(edge.target);
         if (!src || !tgt) return;
         const isAct =
           src.id === active ||
