@@ -15,6 +15,7 @@ import cytoscape from "cytoscape"; // Import here, assuming Client Component con
 // Let's use standard import here and ensure the parent (Page) imports THIS component via dynamic.
 
 import { useStore } from "@/store";
+import { Note } from "@/types";
 
 interface GraphViewProps {
   onClose: () => void;
