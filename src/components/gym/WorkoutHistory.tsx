@@ -5,12 +5,13 @@ import { useStore } from "@/store";
 import { formatDuration } from "@/lib/format";
 import { format } from "date-fns";
 import { orderBy, limit, startAfter, QueryDocumentSnapshot } from "firebase/firestore";
+import toast from "react-hot-toast";
 
 const PAGE_SIZE = 20;
 
 export const WorkoutHistory = () => {
   const { user } = useStore();
-  const { queryDocsWithCursor } = useFirestore();
+  const { queryDocsWithCursor, saveDoc } = useFirestore();
   const [sessions, setSessions] = useState<GymSession[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -18,6 +19,8 @@ export const WorkoutHistory = () => {
   const [hasMore, setHasMore] = useState(false);
   // Cursor for the next page — the last document snapshot from the previous query.
   const [cursor, setCursor] = useState<QueryDocumentSnapshot | null>(null);
+  // Tracks in-progress edits per session id before saving.
+  const [editedSessions, setEditedSessions] = useState<Record<string, GymSession>>({});
 
   // ── Initial load ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -74,6 +77,48 @@ export const WorkoutHistory = () => {
         ),
       0,
     );
+
+  const handleSetChange = (
+    sessionId: string,
+    exIdx: number,
+    setIdx: number,
+    field: "weight" | "reps",
+    value: number,
+  ) => {
+    const base = editedSessions[sessionId] ?? sessions.find((s) => s.id === sessionId)!;
+    const updated: GymSession = {
+      ...base,
+      exercises: base.exercises.map((ex, i) =>
+        i !== exIdx
+          ? ex
+          : {
+              ...ex,
+              sets: ex.sets.map((s, j) =>
+                j !== setIdx ? s : { ...s, [field]: value },
+              ),
+            },
+      ),
+    };
+    setEditedSessions((prev) => ({ ...prev, [sessionId]: updated }));
+  };
+
+  const handleSaveSession = async (sessionId: string) => {
+    const edited = editedSessions[sessionId];
+    if (!edited) return;
+    try {
+      await saveDoc("gym_sessions", sessionId, edited);
+      setSessions((prev) => prev.map((s) => (s.id === sessionId ? edited : s)));
+      setEditedSessions((prev) => {
+        const next = { ...prev };
+        delete next[sessionId];
+        return next;
+      });
+      toast.success("Session saved");
+    } catch (err) {
+      console.error("[WorkoutHistory] Failed to save session:", err);
+      toast.error("Failed to save");
+    }
+  };
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -144,31 +189,62 @@ export const WorkoutHistory = () => {
           </div>
 
           {/* Expanded exercise details */}
-          {expandedId === session.id && (
-            <div className="border-t border-nous-border bg-nous-surface/10 p-4 space-y-4 animate-fadeIn">
-              {session.exercises.map((ex, i) => (
-                <div key={i}>
-                  <h4 className="font-medium text-sm text-nous-primary mb-2">
-                    {ex.name}
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {ex.sets.map((set, j) => (
-                      <div
-                        key={j}
-                        className={`px-2 py-1 rounded border text-xs ${
-                          set.completed
-                            ? "bg-nous-success/10 border-nous-success/30 text-nous-success"
-                            : "bg-nous-surface border-nous-border text-nous-secondary"
-                        }`}
-                      >
-                        {set.weight}kg × {set.reps}
-                      </div>
-                    ))}
+          {expandedId === session.id && (() => {
+            const displaySession = editedSessions[session.id] ?? session;
+            const isDirty = !!editedSessions[session.id];
+            return (
+              <div className="border-t border-nous-border bg-nous-surface/10 p-4 space-y-4 animate-fadeIn">
+                {displaySession.exercises.map((ex, i) => (
+                  <div key={i}>
+                    <h4 className="font-medium text-sm text-nous-primary mb-2">{ex.name}</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {ex.sets.map((set, j) => (
+                        <div
+                          key={j}
+                          className={`flex items-center gap-1 px-2 py-1 rounded border text-xs ${
+                            set.completed
+                              ? "bg-nous-success/10 border-nous-success/30 text-nous-success"
+                              : "bg-nous-surface border-nous-border text-nous-secondary"
+                          }`}
+                        >
+                          <input
+                            type="number"
+                            min={0}
+                            value={set.weight}
+                            onChange={(e) => handleSetChange(session.id, i, j, "weight", Number(e.target.value))}
+                            className="w-10 bg-transparent outline-none text-center"
+                            style={{ color: "inherit" }}
+                          />
+                          <span className="opacity-50">kg×</span>
+                          <input
+                            type="number"
+                            min={0}
+                            value={set.reps}
+                            onChange={(e) => handleSetChange(session.id, i, j, "reps", Number(e.target.value))}
+                            className="w-8 bg-transparent outline-none text-center"
+                            style={{ color: "inherit" }}
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+                {isDirty && (
+                  <button
+                    onClick={() => handleSaveSession(session.id)}
+                    className="w-full py-2 rounded-lg text-xs font-bold transition-all"
+                    style={{
+                      background: "rgba(124,122,255,0.15)",
+                      border: "1px solid rgba(124,122,255,0.3)",
+                      color: "var(--nous-accent)",
+                    }}
+                  >
+                    Save changes
+                  </button>
+                )}
+              </div>
+            );
+          })()}
         </div>
       ))}
 

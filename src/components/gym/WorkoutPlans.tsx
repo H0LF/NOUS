@@ -28,6 +28,7 @@ export const WorkoutPlans = ({ onLoadPlan }: WorkoutPlansProps) => {
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<WorkoutTemplate | null>(null);
 
   // Form state
   const [planName, setPlanName] = useState("");
@@ -61,23 +62,36 @@ export const WorkoutPlans = ({ onLoadPlan }: WorkoutPlansProps) => {
     const validExercises = formExercises.filter(e => e.name.trim());
     if (validExercises.length === 0) { toast.error("Add at least one exercise"); return; }
 
-    const id = uuidv4();
+    const id = editingTemplate?.id ?? uuidv4();
     const template: WorkoutTemplate = {
       id,
       userId: user.uid,
       name: trimmedName,
       exercises: validExercises.map(e => ({ ...e, name: e.name.trim() })),
-      createdAt: new Date().toISOString(),
+      createdAt: editingTemplate?.createdAt ?? new Date().toISOString(),
     };
 
     await saveDoc("workout_templates", id, template);
-    toast.success(`Plan "${trimmedName}" saved`);
-    setTemplates(prev => [...prev, template].sort((a, b) => a.name.localeCompare(b.name)));
+    toast.success(editingTemplate ? `"${trimmedName}" updated` : `Plan "${trimmedName}" saved`);
+    if (editingTemplate) {
+      setTemplates(prev => prev.map(t => t.id === id ? template : t).sort((a, b) => a.name.localeCompare(b.name)));
+    } else {
+      setTemplates(prev => [...prev, template].sort((a, b) => a.name.localeCompare(b.name)));
+    }
     cancelCreate();
+  };
+
+  const handleEditPlan = (t: WorkoutTemplate) => {
+    setEditingTemplate(t);
+    setPlanName(t.name);
+    setFormExercises(t.exercises.map(e => ({ ...e })));
+    setIsCreating(true);
+    setExpandedId(null);
   };
 
   const cancelCreate = () => {
     setIsCreating(false);
+    setEditingTemplate(null);
     setPlanName("");
     setFormExercises([DEFAULT_EX()]);
   };
@@ -135,7 +149,7 @@ export const WorkoutPlans = ({ onLoadPlan }: WorkoutPlansProps) => {
           style={{ background: "var(--nous-surface)", border: "1px solid var(--nous-border)" }}
         >
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold" style={{ color: "var(--nous-primary)" }}>New Plan</span>
+            <span className="text-sm font-bold" style={{ color: "var(--nous-primary)" }}>{editingTemplate ? "Edit Plan" : "New Plan"}</span>
             <button onClick={cancelCreate} className="text-xs" style={{ color: "var(--nous-secondary)" }}>
               Cancel
             </button>
@@ -316,6 +330,17 @@ export const WorkoutPlans = ({ onLoadPlan }: WorkoutPlansProps) => {
                   style={{ transform: expandedId === t.id ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
                 >
                   <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+              <button
+                onClick={() => handleEditPlan(t)}
+                className="p-1.5 rounded-lg transition-all"
+                style={{ color: "var(--nous-secondary)" }}
+                title="Edit plan"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                 </svg>
               </button>
               <button

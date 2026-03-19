@@ -149,12 +149,6 @@ export const NeuralGraph = ({
           isFolder: false,
         });
         edges.push({ source: fNodeId, target: note.id, strength: 1 });
-        if (ni > 0)
-          edges.push({
-            source: groupNotes[ni - 1].id,
-            target: note.id,
-            strength: 1,
-          });
       });
       groupIndex++;
     });
@@ -179,26 +173,34 @@ export const NeuralGraph = ({
           pulse: prev?.pulse ?? Math.random() * Math.PI * 2,
           isFolder: false,
         });
-        if (ni > 0)
-          edges.push({
-            source: ungrouped[ni - 1].id,
-            target: note.id,
-            strength: 1,
-          });
       });
-      if (ungrouped.length > 2)
-        edges.push({
-          source: ungrouped[ungrouped.length - 1].id,
-          target: ungrouped[0].id,
-          strength: 1,
-        });
     }
+
+    // Connect parent folder → child folder nodes
+    currentFolders.forEach((folder) => {
+      if (!folder.parentId) return;
+      const parentNodeId = `folder:${folder.parentId}`;
+      const childNodeId = `folder:${folder.id}`;
+      if (nodes.find((n) => n.id === parentNodeId) && nodes.find((n) => n.id === childNodeId)) {
+        edges.push({ source: parentNodeId, target: childNodeId, strength: 1.5 });
+      }
+    });
 
     currentNotes.forEach((note) => {
       note.linkedNoteIds?.forEach((targetId) => {
         if (currentNotes.find((n) => n.id === targetId))
           edges.push({ source: note.id, target: targetId, strength: 2 });
       });
+    });
+
+    // Scale note node radius by connection count (Obsidian-like: more links = bigger node)
+    const connCount = new Map<string, number>();
+    edges.forEach((e) => {
+      connCount.set(e.source, (connCount.get(e.source) ?? 0) + 1);
+      connCount.set(e.target, (connCount.get(e.target) ?? 0) + 1);
+    });
+    nodes.forEach((n) => {
+      if (!n.isFolder) n.radius = 4 + Math.min((connCount.get(n.id) ?? 0) * 1.5, 9);
     });
 
     nodesRef.current = nodes;
@@ -462,15 +464,19 @@ export const NeuralGraph = ({
           ctx.fill();
         }
 
-        if (node.isFolder || isActive || isHovered || r > 8) {
+        const showLabel = node.isFolder || isActive || isHovered || cam.zoom > 0.65;
+        if (showLabel) {
           const fontSize = node.isFolder ? 10 : 9;
           ctx.font = `${isActive || node.isFolder ? "600" : "400"} ${fontSize}px -apple-system, sans-serif`;
           const primaryColor = getCSSVar("--nous-primary");
+          const labelAlpha = (node.isFolder || isActive || isHovered)
+            ? 1
+            : Math.min(1, (cam.zoom - 0.5) * 4);
           ctx.fillStyle = isActive
-            ? "#ffffff"
+            ? `rgba(255,255,255,${labelAlpha})`
             : node.isFolder
               ? primaryColor
-              : "rgba(128,128,160,0.7)";
+              : `rgba(128,128,160,${labelAlpha * 0.75})`;
           ctx.textAlign = "center";
           ctx.textBaseline = "top";
           const label =
