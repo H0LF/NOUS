@@ -288,7 +288,9 @@ export default function ImportPage() {
         await saveDoc("events", event.id, event);
         addLog(`[OK] ${event.title} — ${classType} (${e.date} ${e.startTime})`);
       } catch (err: unknown) {
-        addLog(`[FAIL] ${e.title} — ${err instanceof Error ? err.message : "Unknown error"}`);
+        addLog(
+          `[FAIL] ${e.title} — ${err instanceof Error ? err.message : "Unknown error"}`,
+        );
       }
       setProgress(i + 1);
     }
@@ -310,10 +312,16 @@ export default function ImportPage() {
         }}
       >
         <div>
-          <h1 className="text-xl font-bold" style={{ color: "var(--nous-primary)" }}>
+          <h1
+            className="text-xl font-bold"
+            style={{ color: "var(--nous-primary)" }}
+          >
             Import Calendar Events
           </h1>
-          <p className="text-[13px] mt-1" style={{ color: "var(--nous-secondary)" }}>
+          <p
+            className="text-[13px] mt-1"
+            style={{ color: "var(--nous-secondary)" }}
+          >
             This will import {IMPORT_DATA.events.length} weekly class events
             into your calendar.
           </p>
@@ -326,7 +334,10 @@ export default function ImportPage() {
         >
           <div
             className="px-4 py-2 text-[10px] font-semibold uppercase tracking-widest"
-            style={{ background: "rgba(45,139,139,0.08)", color: "var(--nous-accent)" }}
+            style={{
+              background: "rgba(45,139,139,0.08)",
+              color: "var(--nous-accent)",
+            }}
           >
             Events to import
           </div>
@@ -346,7 +357,10 @@ export default function ImportPage() {
                 >
                   {e.title}
                 </span>
-                <span className="text-[11px]" style={{ color: "var(--nous-secondary)" }}>
+                <span
+                  className="text-[11px]"
+                  style={{ color: "var(--nous-secondary)" }}
+                >
                   {subtypeMap[(e.subtype || "").toLowerCase()] || e.subtype}
                 </span>
                 <span
@@ -375,7 +389,10 @@ export default function ImportPage() {
                 }}
               />
             </div>
-            <p className="text-[11px] mt-1.5" style={{ color: "var(--nous-secondary)" }}>
+            <p
+              className="text-[11px] mt-1.5"
+              style={{ color: "var(--nous-secondary)" }}
+            >
               {progress} / {IMPORT_DATA.events.length}
             </p>
           </div>
@@ -405,9 +422,7 @@ export default function ImportPage() {
             className="w-full py-3 rounded-xl font-semibold text-[14px] transition-all"
             style={{
               background:
-                status === "running"
-                  ? "rgba(45,139,139,0.3)"
-                  : ""#2d8b8b"",
+                status === "running" ? "rgba(45,139,139,0.3)" : "#2d8b8b",
               color: "#fff",
               cursor: status === "running" ? "not-allowed" : "pointer",
             }}
@@ -425,7 +440,10 @@ export default function ImportPage() {
             <a
               href="/app/calendar"
               className="flex-1 py-3 rounded-xl text-center font-semibold text-[14px] transition-all"
-              style={{ background: "rgba(45,139,139,0.2)", color: "var(--nous-accent)" }}
+              style={{
+                background: "rgba(45,139,139,0.2)",
+                color: "var(--nous-accent)",
+              }}
             >
               Go to Calendar →
             </a>
@@ -433,7 +451,10 @@ export default function ImportPage() {
         )}
 
         {!user && (
-          <p className="text-[12px] text-center" style={{ color: "var(--nous-error)" }}>
+          <p
+            className="text-[12px] text-center"
+            style={{ color: "var(--nous-error)" }}
+          >
             You must be logged in to import events.
           </p>
         )}
