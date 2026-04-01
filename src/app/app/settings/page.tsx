@@ -87,9 +87,9 @@ function NutritionGoals() {
         onClick={handleSave}
         className="w-full py-2 rounded-lg text-[12px] font-semibold transition-all mt-1"
         style={{
-          background: saved ? "rgba(48,196,141,0.15)" : "rgba(124,122,255,0.1)",
-          color: saved ? "#30c48d" : "var(--nous-accent)",
-          border: `1px solid ${saved ? "rgba(48,196,141,0.3)" : "rgba(124,122,255,0.2)"}`,
+          background: saved ? "rgba(92,158,122,0.12)" : "rgba(45,139,139,0.08)",
+          color: saved ? "var(--nous-success)" : "var(--nous-accent)",
+          border: `1px solid ${saved ? "rgba(92,158,122,0.3)" : "rgba(45,139,139,0.2)"}`,
         }}
       >
         {saved ? "Saved ✓" : "Save Goals"}
@@ -106,7 +106,7 @@ export default function SettingsPage() {
           Preferences
         </p>
         <h1
-          className="text-[32px] font-bold text-nous-primary mt-0.5"
+          className="text-[32px] font-bold font-display text-nous-primary mt-0.5"
           style={{ fontStyle: "italic", letterSpacing: "-0.03em", lineHeight: 1.1 }}
         >
           Settings

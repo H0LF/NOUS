@@ -32,7 +32,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div
             className="w-12 h-12 rounded-2xl flex items-center justify-center animate-pulseGlow"
             style={{
-              background: "linear-gradient(135deg, #7c7aff, #5e5ce6)",
+              background: "linear-gradient(135deg, #2d8b8b, #1d6b6b)",
             }}
           >
             <svg width="24" height="24" viewBox="0 0 44 44" fill="none">

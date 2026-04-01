@@ -56,9 +56,6 @@ export default function NotesPage() {
   );
 
   // ── Pending note from calendar double-click ───────────────────────────────
-  // When the user double-clicks a calendar event, the event metadata is
-  // stashed in sessionStorage. On navigation to the Notes page we pick it
-  // up, create a folder (or reuse an existing one) and open a new note.
   useEffect(() => {
     const handlePendingNote = async () => {
       const pendingStr = sessionStorage.getItem("pendingNote");
@@ -74,7 +71,6 @@ export default function NotesPage() {
             classType?: string;
           };
 
-        // Reuse existing folder with the same name, or create a new one.
         const existingFolders = await queryDocs<Folder>(
           "folders",
           where("name", "==", eventTitle),
@@ -92,7 +88,6 @@ export default function NotesPage() {
           });
         }
 
-        // For class events, auto-number notes by class type.
         let title = eventTitle;
         if (isClass && classType) {
           const existingNotes = await queryDocs<Note>(
@@ -143,7 +138,7 @@ export default function NotesPage() {
         {/* Sidebar */}
         <div
           className="w-[260px] shrink-0"
-          style={{ borderRight: "1px solid rgba(255,255,255,0.05)" }}
+          style={{ borderRight: "1px solid var(--nous-border)" }}
         >
           <FileExplorer className="h-full" />
         </div>
@@ -159,7 +154,7 @@ export default function NotesPage() {
             className="shrink-0 flex flex-col relative"
             style={{
               width: graphWidth,
-              borderLeft: "1px solid rgba(255,255,255,0.05)",
+              borderLeft: "1px solid var(--nous-border)",
             }}
           >
             {/* Drag-to-resize handle */}
@@ -169,7 +164,7 @@ export default function NotesPage() {
               style={{ cursor: "col-resize" }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.background =
-                  "rgba(124,122,255,0.3)";
+                  "rgba(232,160,32,0.3)";
               }}
               onMouseLeave={(e) => {
                 if (!isResizingRef.current)
@@ -179,19 +174,19 @@ export default function NotesPage() {
             />
             <div
               className="flex items-center justify-between px-4 py-3 shrink-0"
-              style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+              style={{ borderBottom: "1px solid var(--nous-border)" }}
             >
               <div className="flex items-center gap-2">
                 <div
                   className="w-5 h-5 rounded-md flex items-center justify-center"
-                  style={{ background: "rgba(124,122,255,0.1)" }}
+                  style={{ background: "rgba(232,160,32,0.1)" }}
                 >
                   <svg
                     width="10"
                     height="10"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#7c7aff"
+                    stroke="var(--nous-accent)"
                     strokeWidth="2.5"
                   >
                     <circle cx="18" cy="5" r="2.5" />
@@ -203,7 +198,7 @@ export default function NotesPage() {
                 </div>
                 <span
                   className="text-[12px] font-semibold"
-                  style={{ color: "#7a7a8c" }}
+                  style={{ color: "var(--nous-secondary)", fontFamily: "var(--font-syne)" }}
                 >
                   Graph
                 </span>
@@ -211,13 +206,13 @@ export default function NotesPage() {
               <button
                 onClick={() => setShowGraph(false)}
                 className="w-6 h-6 flex items-center justify-center rounded-md transition-all duration-150"
-                style={{ color: "#3a3a50" }}
+                style={{ color: "var(--nous-secondary)" }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "#e8e8f0";
-                  e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                  e.currentTarget.style.color = "var(--nous-primary)";
+                  e.currentTarget.style.background = "var(--nous-card)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "#3a3a50";
+                  e.currentTarget.style.color = "var(--nous-secondary)";
                   e.currentTarget.style.background = "transparent";
                 }}
                 title="Hide graph"
@@ -247,9 +242,9 @@ export default function NotesPage() {
 
             <div
               className="px-4 py-2.5 shrink-0 flex items-center justify-center"
-              style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
+              style={{ borderTop: "1px solid var(--nous-border)" }}
             >
-              <p className="text-[10px]" style={{ color: "#2e2e40" }}>
+              <p className="text-[10px]" style={{ color: "var(--nous-tertiary)", fontFamily: "var(--font-space-mono)" }}>
                 {allNotes.length} page
                 {allNotes.length !== 1 ? "s" : ""} connected
               </p>
@@ -264,15 +259,15 @@ export default function NotesPage() {
             className="w-10 shrink-0 flex flex-col items-center justify-center gap-2 transition-all duration-200"
             style={{
               background: "var(--nous-bg)",
-              borderLeft: "1px solid rgba(255,255,255,0.05)",
-              color: "#3a3a50",
+              borderLeft: "1px solid var(--nous-border)",
+              color: "var(--nous-secondary)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#7c7aff";
-              e.currentTarget.style.background = "rgba(124,122,255,0.04)";
+              e.currentTarget.style.color = "var(--nous-accent)";
+              e.currentTarget.style.background = "rgba(232,160,32,0.04)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#3a3a50";
+              e.currentTarget.style.color = "var(--nous-secondary)";
               e.currentTarget.style.background = "var(--nous-bg)";
             }}
             title="Show graph"
@@ -301,7 +296,7 @@ export default function NotesPage() {
           className="flex shrink-0"
           style={{
             background: "var(--nous-surface)",
-            borderBottom: "1px solid rgba(255,255,255,0.05)",
+            borderBottom: "1px solid var(--nous-border)",
           }}
         >
           {(
@@ -310,14 +305,7 @@ export default function NotesPage() {
                 key: "list",
                 label: "Pages",
                 icon: (
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
                   </svg>
@@ -327,14 +315,7 @@ export default function NotesPage() {
                 key: "editor",
                 label: "Editor",
                 icon: (
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
                     <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
                   </svg>
@@ -344,14 +325,7 @@ export default function NotesPage() {
                 key: "graph",
                 label: "Graph",
                 icon: (
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <circle cx="18" cy="5" r="3" />
                     <circle cx="6" cy="12" r="3" />
                     <circle cx="18" cy="19" r="3" />
@@ -367,11 +341,12 @@ export default function NotesPage() {
               onClick={() => setMobilePanel(key)}
               className="flex-1 flex flex-col items-center gap-1 py-3 transition-all duration-150"
               style={{
-                color: mobilePanel === key ? "#7c7aff" : "#3a3a50",
+                color: mobilePanel === key ? "var(--nous-accent)" : "var(--nous-secondary)",
                 borderBottom:
                   mobilePanel === key
-                    ? "2px solid #7c7aff"
+                    ? "2px solid var(--nous-accent)"
                     : "2px solid transparent",
+                fontFamily: "var(--font-syne)",
               }}
             >
               {icon}

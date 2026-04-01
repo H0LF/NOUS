@@ -30,7 +30,7 @@ interface NoteEditorProps {
 // ── Drawing canvas ────────────────────────────────────────────────────────────
 const DRAW_COLORS = [
   "#e8e8f0",
-  "#7c7aff",
+  "#2d8b8b",
   "#30c48d",
   "#e879f9",
   "#f87171",
@@ -147,8 +147,8 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
               className="px-3 py-1.5 text-[12px] font-medium transition-all duration-150"
               style={{
                 background:
-                  tool === t ? "rgba(124,122,255,0.15)" : "transparent",
-                color: tool === t ? "#7c7aff" : "var(--nous-secondary)",
+                  tool === t ? "rgba(45,139,139,0.15)" : "transparent",
+                color: tool === t ? "#2d8b8b" : "var(--nous-secondary)",
               }}
             >
               {t === "pen" ? "Pen" : "Eraser"}
@@ -174,7 +174,7 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
                     : "2px solid var(--nous-border)",
                 boxShadow:
                   color === c && tool === "pen"
-                    ? "0 0 8px rgba(124,122,255,0.4)"
+                    ? "0 0 8px rgba(45,139,139,0.4)"
                     : "none",
               }}
             />
@@ -190,7 +190,7 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
               className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150"
               style={{
                 background:
-                  size === s ? "rgba(124,122,255,0.12)" : "transparent",
+                  size === s ? "rgba(45,139,139,0.12)" : "transparent",
               }}
             >
               <div
@@ -198,7 +198,7 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
                 style={{
                   width: Math.min(s * 2, 18),
                   height: Math.min(s * 2, 18),
-                  background: size === s ? "#7c7aff" : "var(--nous-tertiary)",
+                  background: size === s ? "#2d8b8b" : "var(--nous-tertiary)",
                 }}
               />
             </button>
@@ -517,13 +517,13 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
       >
         <div className="flex flex-col items-center gap-4 opacity-60">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
-            style={{ background: "rgba(124,122,255,0.06)" }}>
+            style={{ background: "rgba(45,139,139,0.06)" }}>
             <svg
               width="28"
               height="28"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#7c7aff"
+              stroke="#2d8b8b"
               strokeWidth="1.2"
             >
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -554,11 +554,11 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
       className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150"
       style={{
         color: active ? "var(--nous-primary)" : "var(--nous-secondary)",
-        background: active ? "rgba(124,122,255,0.12)" : "transparent",
+        background: active ? "rgba(45,139,139,0.12)" : "transparent",
       }}
       title={btnTitle}
       onMouseEnter={(e) => { e.currentTarget.style.color = "var(--nous-primary)"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.color = active ? "var(--nous-primary)" : "var(--nous-secondary)"; e.currentTarget.style.background = active ? "rgba(124,122,255,0.12)" : "transparent"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.color = active ? "var(--nous-primary)" : "var(--nous-secondary)"; e.currentTarget.style.background = active ? "rgba(45,139,139,0.12)" : "transparent"; }}
     >
       {children}
     </button>
@@ -713,7 +713,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
                   top: wikilinkPos.top,
                   left: wikilinkPos.left,
                   background: "#1a1a24",
-                  border: "1px solid rgba(124,122,255,0.2)",
+                  border: "1px solid rgba(45,139,139,0.2)",
                   minWidth: 240,
                   boxShadow: "0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)",
                 }}
@@ -735,7 +735,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
                     style={{ color: "var(--nous-primary)" }}
                     onMouseEnter={(e) =>
                       (e.currentTarget.style.background =
-                        "rgba(124,122,255,0.10)")
+                        "rgba(45,139,139,0.10)")
                     }
                     onMouseLeave={(e) =>
                       (e.currentTarget.style.background = "transparent")
@@ -746,7 +746,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
                       height="14"
                       viewBox="0 0 24 24"
                       fill="none"
-                      stroke="#7c7aff"
+                      stroke="#2d8b8b"
                       strokeWidth="1.5"
                     >
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -803,7 +803,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
               {note.linkedNoteIds?.length > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-[12px]" style={{ color: "var(--nous-secondary)" }}>Links</span>
-                  <span className="text-[12px] font-medium" style={{ color: "#7c7aff" }}>
+                  <span className="text-[12px] font-medium" style={{ color: "#2d8b8b" }}>
                     {note.linkedNoteIds.length}
                   </span>
                 </div>
@@ -838,9 +838,9 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
                   <button
                     onClick={() => setShowDraw(true)}
                     className="text-[12px] font-medium transition-colors"
-                    style={{ color: "#7c7aff" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = "#a5a3ff")}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = "#7c7aff")}
+                    style={{ color: "#2d8b8b" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "#45abab")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "#2d8b8b")}
                   >
                     Edit
                   </button>
@@ -894,15 +894,15 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
                       color: "#c8c8d8",
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "rgba(124,122,255,0.06)";
-                      e.currentTarget.style.borderColor = "rgba(124,122,255,0.15)";
+                      e.currentTarget.style.background = "rgba(45,139,139,0.06)";
+                      e.currentTarget.style.borderColor = "rgba(45,139,139,0.15)";
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = "rgba(255,255,255,0.02)";
                       e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)";
                     }}
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c7aff" strokeWidth="1.5">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2d8b8b" strokeWidth="1.5">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                       <polyline points="14 2 14 8 20 8" />
                     </svg>

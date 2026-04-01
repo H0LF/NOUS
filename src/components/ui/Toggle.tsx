@@ -15,10 +15,10 @@ export const Toggle = ({ checked, onChange, label }: ToggleProps) => {
           width: 44,
           height: 26,
           background: checked
-            ? 'linear-gradient(135deg, #7c7aff, #5e5ce6)'
+            ? '#2d8b8b'
             : 'rgba(255,255,255,0.06)',
           border: checked ? 'none' : '1px solid rgba(255,255,255,0.1)',
-          boxShadow: checked ? '0 0 12px rgba(124,122,255,0.3)' : 'none',
+          boxShadow: checked ? '0 0 12px rgba(45,139,139,0.3)' : 'none',
         }}
       >
         <div

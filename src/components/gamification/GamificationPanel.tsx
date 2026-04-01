@@ -41,12 +41,12 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
     <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ overflow: "visible" }}>
       <defs>
         <linearGradient id="radarFill" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#7c7aff" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.25" />
+          <stop offset="0%" stopColor="#2d8b8b" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="#45abab" stopOpacity="0.2" />
         </linearGradient>
         <linearGradient id="radarStroke" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#7c7aff" />
-          <stop offset="100%" stopColor="#38bdf8" />
+          <stop offset="0%" stopColor="#2d8b8b" />
+          <stop offset="100%" stopColor="#45abab" />
         </linearGradient>
         <filter id="radarGlow">
           <feGaussianBlur stdDeviation="3" result="blur" />
@@ -62,7 +62,7 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
           key={ri}
           d={ringPath(ratio)}
           fill="none"
-          stroke={ratio === 1 ? "rgba(124,122,255,0.25)" : "var(--nous-border)"}
+          stroke={ratio === 1 ? "rgba(45,139,139,0.25)" : "var(--nous-border)"}
           strokeWidth={ratio === 1 ? 1 : 0.8}
         />
       ))}
@@ -93,7 +93,7 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
             cx={x.toFixed(2)}
             cy={y.toFixed(2)}
             r="3.5"
-            fill="#38bdf8"
+            fill="#2d8b8b"
             stroke="var(--nous-bg)"
             strokeWidth="1.5"
             filter="url(#radarGlow)"
@@ -116,7 +116,7 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
               fontSize="9"
               fontWeight="600"
               fill="var(--nous-secondary)"
-              fontFamily="-apple-system, sans-serif"
+              fontFamily="var(--font-outfit), sans-serif"
             >
               {axis.label}
             </text>
@@ -125,8 +125,8 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
               y={(y + dy + 11).toFixed(2)}
               textAnchor={textAnchor}
               fontSize="8"
-              fill="#7c7aff"
-              fontFamily="-apple-system, sans-serif"
+              fill="#2d8b8b"
+              fontFamily="var(--font-outfit), sans-serif"
               fontWeight="700"
             >
               {axis.rawLabel}
@@ -135,14 +135,14 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
         );
       })}
 
-      <circle cx={cx} cy={cy} r="4" fill="#7c7aff" opacity="0.5" filter="url(#radarGlow)" />
+      <circle cx={cx} cy={cy} r="4" fill="#2d8b8b" opacity="0.5" filter="url(#radarGlow)" />
     </svg>
   );
 };
 
 // ── Badge icon ────────────────────────────────────────────────────────────────
 const BadgeIcon = ({ type, earned }: { type: Badge["icon"]; earned: boolean }) => {
-  const color = earned ? "#7c7aff" : "var(--nous-tertiary)";
+  const color = earned ? "#2d8b8b" : "var(--nous-tertiary)";
   const icons: Record<Badge["icon"], React.ReactNode> = {
     food: (
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -196,7 +196,7 @@ export const GamificationPanel = () => {
   const MasterToggle = () => (
     <div
       className="rounded-2xl px-5 py-4 flex items-center justify-between"
-      style={{ background: "rgba(124,122,255,0.05)", border: "1px solid rgba(124,122,255,0.12)" }}
+      style={{ background: "rgba(45,139,139,0.05)", border: "1px solid rgba(45,139,139,0.12)" }}
     >
       <div>
         <p className="text-sm font-semibold" style={{ color: "var(--nous-primary)" }}>
@@ -230,7 +230,7 @@ export const GamificationPanel = () => {
         <MasterToggle />
         <div
           className="rounded-2xl p-6 animate-pulse"
-          style={{ background: "rgba(124,122,255,0.05)", border: "1px solid rgba(124,122,255,0.1)" }}
+          style={{ background: "rgba(45,139,139,0.05)", border: "1px solid rgba(45,139,139,0.1)" }}
         >
           <div className="h-4 rounded-full w-1/3 mb-4" style={{ background: "var(--nous-border)" }} />
           <div className="h-48 rounded-xl" style={{ background: "var(--nous-surface)" }} />
@@ -250,8 +250,8 @@ export const GamificationPanel = () => {
       <div
         className="rounded-2xl p-5 space-y-3"
         style={{
-          background: "linear-gradient(135deg, rgba(124,122,255,0.1) 0%, rgba(56,189,248,0.06) 100%)",
-          border: "1px solid rgba(124,122,255,0.18)",
+          background: "linear-gradient(135deg, rgba(45,139,139,0.1) 0%, rgba(69,171,171,0.05) 100%)",
+          border: "1px solid rgba(45,139,139,0.18)",
         }}
       >
         <div className="flex items-end justify-between">
@@ -281,8 +281,8 @@ export const GamificationPanel = () => {
               className="h-full rounded-full transition-all duration-700"
               style={{
                 width: `${g.progressPercent}%`,
-                background: "linear-gradient(90deg, #7c7aff, #38bdf8)",
-                boxShadow: "0 0 10px rgba(124,122,255,0.5)",
+                background: "linear-gradient(90deg, #2d8b8b, #45abab)",
+                boxShadow: "0 0 10px rgba(45,139,139,0.4)",
               }}
             />
           </div>
@@ -339,7 +339,7 @@ export const GamificationPanel = () => {
               <div className="h-1 rounded-full overflow-hidden" style={{ background: "var(--nous-border)" }}>
                 <div
                   className="h-full rounded-full"
-                  style={{ width: `${axis.value}%`, background: "linear-gradient(90deg, #7c7aff, #38bdf8)" }}
+                  style={{ width: `${axis.value}%`, background: "linear-gradient(90deg, #2d8b8b, #45abab)" }}
                 />
               </div>
             </div>
@@ -363,8 +363,8 @@ export const GamificationPanel = () => {
                 title={badge.description}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-medium"
                 style={{
-                  background: "rgba(124,122,255,0.12)",
-                  border: "1px solid rgba(124,122,255,0.25)",
+                  background: "rgba(45,139,139,0.12)",
+                  border: "1px solid rgba(45,139,139,0.25)",
                   color: "var(--nous-accent)",
                 }}
               >

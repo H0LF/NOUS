@@ -326,7 +326,7 @@ export default function ImportPage() {
         >
           <div
             className="px-4 py-2 text-[10px] font-semibold uppercase tracking-widest"
-            style={{ background: "rgba(124,122,255,0.08)", color: "var(--nous-accent)" }}
+            style={{ background: "rgba(45,139,139,0.08)", color: "var(--nous-accent)" }}
           >
             Events to import
           </div>
@@ -406,8 +406,8 @@ export default function ImportPage() {
             style={{
               background:
                 status === "running"
-                  ? "rgba(124,122,255,0.3)"
-                  : "rgba(124,122,255,0.9)",
+                  ? "rgba(45,139,139,0.3)"
+                  : ""#2d8b8b"",
               color: "#fff",
               cursor: status === "running" ? "not-allowed" : "pointer",
             }}
@@ -425,7 +425,7 @@ export default function ImportPage() {
             <a
               href="/app/calendar"
               className="flex-1 py-3 rounded-xl text-center font-semibold text-[14px] transition-all"
-              style={{ background: "rgba(124,122,255,0.2)", color: "#7c7aff" }}
+              style={{ background: "rgba(45,139,139,0.2)", color: "var(--nous-accent)" }}
             >
               Go to Calendar →
             </a>

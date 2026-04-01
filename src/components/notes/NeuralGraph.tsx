@@ -29,7 +29,7 @@ interface NeuralGraphProps {
   onNodeClick: (id: string) => void;
 }
 
-const ACCENT = "#7c7aff";
+const ACCENT = "#2d8b8b";
 
 // Cache CSS variable reads to avoid getComputedStyle() on every animation frame.
 // Refreshed every 500ms so theme changes are picked up promptly.
@@ -375,10 +375,10 @@ export const NeuralGraph = ({
 
         const grad = ctx.createLinearGradient(src.x, src.y, tgt.x, tgt.y);
         if (isAct) {
-          grad.addColorStop(0, isExplicit ? "rgba(124,122,255,0.8)" : `rgba(${edgeBase},0.28)`);
+          grad.addColorStop(0, isExplicit ? "rgba(45,139,139,0.8)" : `rgba(${edgeBase},0.28)`);
           grad.addColorStop(1, isExplicit ? "rgba(96,165,250,0.8)" : `rgba(${edgeBase},0.28)`);
         } else {
-          grad.addColorStop(0, isExplicit ? "rgba(124,122,255,0.3)" : `rgba(${edgeBase},0.1)`);
+          grad.addColorStop(0, isExplicit ? "rgba(45,139,139,0.3)" : `rgba(${edgeBase},0.1)`);
           grad.addColorStop(1, isExplicit ? "rgba(96,165,250,0.3)" : `rgba(${edgeBase},0.1)`);
         }
         ctx.beginPath();
@@ -394,7 +394,7 @@ export const NeuralGraph = ({
           const py = src.y + (tgt.y - src.y) * t;
           const pg = ctx.createRadialGradient(px, py, 0, px, py, 5);
           pg.addColorStop(0, ACCENT);
-          pg.addColorStop(1, "rgba(124,122,255,0)");
+          pg.addColorStop(1, "rgba(45,139,139,0)");
           ctx.beginPath();
           ctx.arc(px, py, 5, 0, Math.PI * 2);
           ctx.fillStyle = pg;
@@ -412,7 +412,7 @@ export const NeuralGraph = ({
         if (isActive || isHovered || node.isFolder) {
           const glowR = r + (node.isFolder ? 14 : 9) + pulseAmp * 3;
           const grd = ctx.createRadialGradient(node.x, node.y, r * 0.5, node.x, node.y, glowR);
-          grd.addColorStop(0, isActive ? "rgba(124,122,255,0.45)" : baseColor + "38");
+          grd.addColorStop(0, isActive ? "rgba(45,139,139,0.45)" : baseColor + "38");
           grd.addColorStop(1, baseColor + "00"); // color-matched transparent — no black bleed
           ctx.beginPath();
           ctx.arc(node.x, node.y, glowR, 0, Math.PI * 2);
@@ -439,7 +439,7 @@ export const NeuralGraph = ({
           node.y,
           r,
         );
-        grd.addColorStop(0, isActive ? "#d0ceff" : baseColor + "ee");
+        grd.addColorStop(0, isActive ? "#a8d8d8" : baseColor + "ee");
         grd.addColorStop(
           1,
           isActive ? ACCENT : baseColor + (node.isFolder ? "99" : "55"),
@@ -452,7 +452,7 @@ export const NeuralGraph = ({
         ctx.beginPath();
         ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
         ctx.strokeStyle = isActive
-          ? "#a5a3ff"
+          ? "#45abab"
           : baseColor + (node.isFolder ? "ff" : "88");
         ctx.lineWidth = isActive ? 2.5 : node.isFolder ? 2 : 1;
         ctx.stroke();
@@ -677,8 +677,8 @@ export const NeuralGraph = ({
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center"
             style={{
-              background: "rgba(124,122,255,0.1)",
-              border: "1px solid rgba(124,122,255,0.2)",
+              background: "rgba(45,139,139,0.1)",
+              border: "1px solid rgba(45,139,139,0.2)",
             }}
           >
             <svg
@@ -686,7 +686,7 @@ export const NeuralGraph = ({
               height="18"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#7c7aff"
+              stroke="#2d8b8b"
               strokeWidth="1.8"
             >
               <circle cx="18" cy="5" r="3" />
@@ -805,7 +805,7 @@ export const NeuralGraph = ({
             left: tooltip.x,
             top: tooltip.y,
             background: "var(--nous-surface)",
-            border: "1px solid rgba(124,122,255,0.3)",
+            border: "1px solid rgba(45,139,139,0.3)",
             color: "var(--nous-primary)",
             transform: "translateX(-50%)",
             boxShadow: "0 6px 20px rgba(0,0,0,0.5)",

@@ -13,14 +13,21 @@ interface MacroSummaryProps {
   goals: UserSettings;
 }
 
+const macroColors: Record<string, string> = {
+  Protein: "#3b82f6",
+  Carbs:   "#94a8bc",
+  Fat:     "#f472b6",
+  Fiber:   "#5a8a80",
+};
+
 export const MacroSummary = ({ totals, goals }: MacroSummaryProps) => {
   const getProgress = (value: number, goal: number) => Math.min((value / goal) * 100, 100);
 
   const macros = [
-      { label: "Protein", value: totals.protein, goal: goals.dailyProteinGoal, color: "bg-blue-500", unit: "g" },
-      { label: "Carbs", value: totals.carbs, goal: goals.dailyCarbsGoal, color: "bg-orange-500", unit: "g" },
-      { label: "Fat", value: totals.fat, goal: goals.dailyFatGoal, color: "bg-yellow-500", unit: "g" },
-      { label: "Fiber", value: totals.fiber, goal: 30, color: "bg-green-500", unit: "g" }, // Default fiber goal 30g
+    { label: "Protein", value: totals.protein, goal: goals.dailyProteinGoal, unit: "g" },
+    { label: "Carbs",   value: totals.carbs,   goal: goals.dailyCarbsGoal,   unit: "g" },
+    { label: "Fat",     value: totals.fat,      goal: goals.dailyFatGoal,     unit: "g" },
+    { label: "Fiber",   value: totals.fiber,    goal: 30,                     unit: "g" },
   ];
 
   return (
@@ -36,15 +43,22 @@ export const MacroSummary = ({ totals, goals }: MacroSummaryProps) => {
         {macros.map((m) => (
           <div key={m.label}>
             <div className="flex justify-between text-[12px] mb-1">
-              <span className="font-medium" style={{ color: "var(--nous-primary)" }}>{m.label}</span>
-              <span style={{ color: "var(--nous-secondary)" }}>
-                {Math.round(m.value)}<span style={{ color: "var(--nous-tertiary)" }}>/{m.goal}{m.unit}</span>
+              <span className="font-semibold" style={{ color: "var(--nous-primary)", fontFamily: "var(--font-syne)" }}>
+                {m.label}
+              </span>
+              <span style={{ color: "var(--nous-secondary)", fontFamily: "var(--font-space-mono)", fontSize: "11px" }}>
+                {Math.round(m.value)}
+                <span style={{ color: "var(--nous-tertiary)" }}>/{m.goal}{m.unit}</span>
               </span>
             </div>
-            <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "var(--nous-bg)" }}>
+            <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "var(--nous-card)" }}>
               <div
-                className={`h-full rounded-full transition-all duration-500 ${m.color}`}
-                style={{ width: `${getProgress(m.value, m.goal)}%` }}
+                className="h-full rounded-full transition-all duration-700"
+                style={{
+                  width: `${getProgress(m.value, m.goal)}%`,
+                  background: macroColors[m.label],
+                  boxShadow: `0 0 6px ${macroColors[m.label]}55`,
+                }}
               />
             </div>
           </div>

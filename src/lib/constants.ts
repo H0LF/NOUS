@@ -6,7 +6,7 @@
 // ── Folder colours ────────────────────────────────────────────────────────────
 // Used by FileExplorer, NotesPage (pending-note creation), and NeuralGraph.
 export const FOLDER_COLORS = [
-  "#7c7aff",
+  "#2d8b8b",
   "#30c48d",
   "#e879f9",
   "#f87171",

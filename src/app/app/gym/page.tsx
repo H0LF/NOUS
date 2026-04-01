@@ -186,7 +186,7 @@ export default function GymPage() {
             Training
           </p>
           <h1
-            className="text-[32px] font-bold text-nous-primary mt-0.5"
+            className="text-[32px] font-bold font-display text-nous-primary mt-0.5"
             style={{ fontStyle: "italic", letterSpacing: "-0.03em", lineHeight: 1.1 }}
           >
             Gym

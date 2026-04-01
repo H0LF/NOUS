@@ -125,7 +125,7 @@ export default function FoodPage() {
             Nutrition
           </p>
           <h1
-            className="text-[32px] font-bold text-nous-primary mt-0.5"
+            className="text-[32px] font-bold font-display text-nous-primary mt-0.5"
             style={{ fontStyle: "italic", letterSpacing: "-0.03em", lineHeight: 1.1 }}
           >
             Food
@@ -149,8 +149,8 @@ export default function FoodPage() {
             onClick={goToToday}
             className="h-8 px-3 rounded-lg text-[11px] font-semibold transition-all"
             style={{
-              background: isSelectedToday ? "rgba(124,122,255,0.12)" : "var(--nous-surface)",
-              border: `1px solid ${isSelectedToday ? "rgba(124,122,255,0.3)" : "var(--nous-border)"}`,
+              background: isSelectedToday ? "rgba(45,139,139,0.1)" : "var(--nous-surface)",
+              border: `1px solid ${isSelectedToday ? "rgba(45,139,139,0.3)" : "var(--nous-border)"}`,
               color: isSelectedToday ? "var(--nous-accent)" : "var(--nous-secondary)",
             }}
           >

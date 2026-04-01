@@ -9,7 +9,7 @@ interface FolderTreeProps {
   className?: string;
 }
 
-const FOLDER_COLORS = ["#7c7aff","#30c48d","#e879f9","#f87171","#60a5fa","#c084fc"];
+const FOLDER_COLORS = ["#2d8b8b","#30c48d","#e879f9","#f87171","#60a5fa","#45abab"];
 
 export const FolderTree = ({ className = "" }: FolderTreeProps) => {
   const { subscribeCollection, saveDoc, deleteDocument } = useFirestore();
@@ -52,8 +52,8 @@ export const FolderTree = ({ className = "" }: FolderTreeProps) => {
   };
 
   const itemStyle = (active: boolean) => ({
-    background: active ? 'rgba(124,122,255,0.1)' : 'transparent',
-    color: active ? '#a5a3ff' : 'var(--nous-secondary)',
+    background: active ? 'rgba(45,139,139,0.1)' : 'transparent',
+    color: active ? 'var(--nous-accent)' : 'var(--nous-secondary)',
     borderRadius: '6px',
     padding: '5px 8px',
     cursor: 'pointer',
@@ -76,7 +76,7 @@ export const FolderTree = ({ className = "" }: FolderTreeProps) => {
           onClick={() => setIsCreating(true)}
           className="w-5 h-5 flex items-center justify-center rounded transition-colors"
           style={{ color: '#2e2e40' }}
-          onMouseEnter={e => (e.currentTarget.style.color = '#7c7aff')}
+          onMouseEnter={e => (e.currentTarget.style.color = 'var(--nous-accent)')}
           onMouseLeave={e => (e.currentTarget.style.color = '#2e2e40')}
         >
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -97,7 +97,7 @@ export const FolderTree = ({ className = "" }: FolderTreeProps) => {
             className="w-full text-[11px] px-2 py-1.5 rounded-md outline-none"
             style={{
               background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(124,122,255,0.3)',
+              border: '1px solid rgba(45,139,139,0.3)',
               color: 'var(--nous-primary)',
             }}
           />

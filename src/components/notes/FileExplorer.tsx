@@ -482,7 +482,7 @@ export const FileExplorer = ({ className = "", onNotesChange }: FileExplorerProp
         style={{
           padding: "6px 10px",
           marginLeft: indentLevel * 12,
-          background: active ? "rgba(124,122,255,0.10)" : "transparent",
+          background: active ? "rgba(45,139,139,0.10)" : "transparent",
           color: active ? "var(--nous-primary)" : "var(--nous-secondary)",
           opacity: dragItem?.id === note.id ? 0.4 : 1,
         }}
@@ -620,8 +620,8 @@ export const FileExplorer = ({ className = "", onNotesChange }: FileExplorerProp
         style={{
           marginLeft: depth * 12,
           borderRadius: 8,
-          outline: isDragOver ? "1px solid rgba(124,122,255,0.4)" : "none",
-          background: isDragOver ? "rgba(124,122,255,0.08)" : "transparent",
+          outline: isDragOver ? "1px solid rgba(45,139,139,0.4)" : "none",
+          background: isDragOver ? "rgba(45,139,139,0.08)" : "transparent",
           opacity: isDraggingThis ? 0.4 : 1,
           transition: "background 150ms, outline 150ms",
         }}
@@ -784,7 +784,7 @@ export const FileExplorer = ({ className = "", onNotesChange }: FileExplorerProp
                   className="w-full text-[12px] px-2 py-1.5 rounded-lg outline-none"
                   style={{
                     background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(124,122,255,0.3)",
+                    border: "1px solid rgba(45,139,139,0.3)",
                     color: "var(--nous-primary)",
                   }}
                 />
@@ -825,7 +825,7 @@ export const FileExplorer = ({ className = "", onNotesChange }: FileExplorerProp
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center"
             style={{
-              background: "linear-gradient(135deg, #7c7aff 0%, #5e5ce6 100%)",
+              background: "linear-gradient(135deg, #2d8b8b 0%, #1d6b6b 100%)",
             }}
           >
             <svg width="14" height="14" viewBox="0 0 44 44" fill="none">
@@ -879,15 +879,15 @@ export const FileExplorer = ({ className = "", onNotesChange }: FileExplorerProp
             onClick={() => createNote()}
             className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-medium transition-all duration-150"
             style={{
-              background: "rgba(124,122,255,0.08)",
+              background: "rgba(45,139,139,0.08)",
               color: "var(--nous-accent)",
-              border: "1px solid rgba(124,122,255,0.12)",
+              border: "1px solid rgba(45,139,139,0.12)",
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.background = "rgba(124,122,255,0.15)")
+              (e.currentTarget.style.background = "rgba(45,139,139,0.15)")
             }
             onMouseLeave={(e) =>
-              (e.currentTarget.style.background = "rgba(124,122,255,0.08)")
+              (e.currentTarget.style.background = "rgba(45,139,139,0.08)")
             }
           >
             <svg
@@ -914,7 +914,7 @@ export const FileExplorer = ({ className = "", onNotesChange }: FileExplorerProp
             title="New folder"
             onMouseEnter={(e) => {
               e.currentTarget.style.color = "var(--nous-accent)";
-              e.currentTarget.style.background = "rgba(124,122,255,0.08)";
+              e.currentTarget.style.background = "rgba(45,139,139,0.08)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.color = "var(--nous-secondary)";
@@ -950,7 +950,7 @@ export const FileExplorer = ({ className = "", onNotesChange }: FileExplorerProp
             className="w-full text-[13px] px-3 py-2 rounded-lg outline-none transition-all"
             style={{
               background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(124,122,255,0.3)",
+              border: "1px solid rgba(45,139,139,0.3)",
               color: "var(--nous-primary)",
             }}
           />
@@ -1023,8 +1023,8 @@ export const FileExplorer = ({ className = "", onNotesChange }: FileExplorerProp
                 <div
                   className="mt-2 rounded-lg transition-all duration-150"
                   style={{
-                    outline: dragOverId === "root" ? "1px solid rgba(124,122,255,0.4)" : "none",
-                    background: dragOverId === "root" ? "rgba(124,122,255,0.07)" : "transparent",
+                    outline: dragOverId === "root" ? "1px solid rgba(45,139,139,0.4)" : "none",
+                    background: dragOverId === "root" ? "rgba(45,139,139,0.07)" : "transparent",
                     minHeight: dragItem ? 32 : undefined,
                   }}
                   onDragOver={(e) => {
@@ -1067,14 +1067,14 @@ export const FileExplorer = ({ className = "", onNotesChange }: FileExplorerProp
                 <div className="py-12 text-center">
                   <div
                     className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-                    style={{ background: "rgba(124,122,255,0.08)" }}
+                    style={{ background: "rgba(45,139,139,0.08)" }}
                   >
                     <svg
                       width="22"
                       height="22"
                       viewBox="0 0 24 24"
                       fill="none"
-                      stroke="#7c7aff"
+                      stroke="#2d8b8b"
                       strokeWidth="1.5"
                     >
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -1100,15 +1100,15 @@ export const FileExplorer = ({ className = "", onNotesChange }: FileExplorerProp
                     className="text-[12px] font-medium px-4 py-2 rounded-lg transition-all"
                     style={{
                       color: "var(--nous-accent)",
-                      background: "rgba(124,122,255,0.1)",
+                      background: "rgba(45,139,139,0.1)",
                     }}
                     onMouseEnter={(e) =>
                       (e.currentTarget.style.background =
-                        "rgba(124,122,255,0.18)")
+                        "rgba(45,139,139,0.18)")
                     }
                     onMouseLeave={(e) =>
                       (e.currentTarget.style.background =
-                        "rgba(124,122,255,0.1)")
+                        "rgba(45,139,139,0.1)")
                     }
                   >
                     New Page
@@ -1243,7 +1243,7 @@ export const FileExplorer = ({ className = "", onNotesChange }: FileExplorerProp
               }}
               className="w-full text-left flex items-center gap-2 px-3 py-2 text-[12px] transition-colors"
               style={{ color: "var(--nous-primary)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(124,122,255,0.07)")}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(45,139,139,0.07)")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
               Change color

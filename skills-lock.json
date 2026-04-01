@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "theme-factory": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "0290eabfd6fea9fcfd59c12de15e3f4046593185089956802b6d48ba1d07f428"
+    }
+  }
+}

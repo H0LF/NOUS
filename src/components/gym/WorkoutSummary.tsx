@@ -55,8 +55,8 @@ export const WorkoutSummary = ({
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
           style={{
-            background: "linear-gradient(135deg, #7c7aff 0%, #5e5ce6 100%)",
-            boxShadow: "0 8px 24px rgba(124,122,255,0.35)",
+            background: "linear-gradient(135deg, #2d8b8b 0%, #1d6b6b 100%)",
+            boxShadow: "0 8px 24px rgba(45,139,139,0.35)",
           }}
         >
           <svg

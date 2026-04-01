@@ -270,9 +270,9 @@ export const ExercisePicker = ({
               onClick={() => setActiveGroup("All")}
               className="px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all"
               style={{
-                background: activeGroup === "All" ? "rgba(124,122,255,0.15)" : "rgba(255,255,255,0.04)",
-                color: activeGroup === "All" ? "#7c7aff" : "#5a5a6e",
-                border: `1px solid ${activeGroup === "All" ? "rgba(124,122,255,0.3)" : "transparent"}`,
+                background: activeGroup === "All" ? "rgba(45,139,139,0.15)" : "rgba(255,255,255,0.04)",
+                color: activeGroup === "All" ? "#2d8b8b" : "#5a5a6e",
+                border: `1px solid ${activeGroup === "All" ? "rgba(45,139,139,0.3)" : "transparent"}`,
               }}
             >
               All

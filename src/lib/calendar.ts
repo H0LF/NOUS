@@ -5,7 +5,7 @@
 // ── Color helpers ───────────────────────────────────────────────────────────────
 
 export function getEventColors(hex: string | undefined) {
-  const color = hex || "#7c7aff";
+  const color = hex || "#2d8b8b";
   // Handle 3-char hex (#abc → #aabbcc)
   const full =
     color.length === 4

@@ -10,48 +10,51 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 /*
-  Premium Design System — NOUS
-  Inspired by: Linear, Vercel, Notion, Obsidian
+  Design System — NOUS
+  Theme: Modern Minimalist
+
+  Adapted from theme-factory: Modern Minimalist
+  Charcoal · Slate Gray · Light Gray · White
 
   Surface hierarchy (dark):
-  bg       #0d0d12  — deepest layer, page background
-  surface  #16161e  — cards, panels
-  card     #1e1e28  — elevated cards
-  border   rgba(255,255,255,0.07)
+  bg       #111417  — cool near-black charcoal
+  surface  #181d21  — dark charcoal surface
+  card     #1f252b  — slightly elevated
+  border   rgba(255,255,255,0.065)
 
-  Never use pure black (#000). Never use pure white (#fff) for text.
+  Accent: #94a8bc — cool slate (light on dark / inverts in light mode)
 */
 
 :root {
   /* Light mode */
-  --nous-bg:        #f0f0f5;
+  --nous-bg:        #f2f4f6;
   --nous-surface:   #ffffff;
-  --nous-card:      #f7f7fb;
-  --nous-border:    rgba(0,0,0,0.10);
-  --nous-accent:    #5e5ce6;
-  --nous-accent2:   #30c48d;
-  --nous-primary:   #1a1a2e;
-  --nous-secondary: #6e6e80;
-  --nous-tertiary:  #c4c4d0;
-  --nous-success:   #30c48d;
-  --nous-warning:   #f59e0b;
-  --nous-error:     #ef4444;
+  --nous-card:      #e8ebee;
+  --nous-border:    rgba(0,0,0,0.08);
+  --nous-accent:    #2d8b8b;
+  --nous-accent2:   #1d6b6b;
+  --nous-primary:   #1a2028;
+  --nous-secondary: #708090;
+  --nous-tertiary:  #d3d3d3;
+  --nous-success:   #2d7d5a;
+  --nous-warning:   #7d702d;
+  --nous-error:     #8b3030;
 }
 
 html.dark {
-  /* Premium deep charcoal — NOT pure black */
-  --nous-bg:        #0d0d12;
-  --nous-surface:   #16161e;
-  --nous-card:      #1e1e28;
-  --nous-border:    rgba(255,255,255,0.07);
-  --nous-accent:    #7c7aff;
-  --nous-accent2:   #30c48d;
-  --nous-primary:   #e8e8f0;
-  --nous-secondary: #7a7a8c;
-  --nous-tertiary:  #2e2e3e;
-  --nous-success:   #30c48d;
-  --nous-warning:   #f59e0b;
-  --nous-error:     #f87171;
+  /* Modern Minimalist dark */
+  --nous-bg:        #111417;
+  --nous-surface:   #181d21;
+  --nous-card:      #1f252b;
+  --nous-border:    rgba(255,255,255,0.065);
+  --nous-accent:    #2d8b8b;
+  --nous-accent2:   #45abab;
+  --nous-primary:   #dde4ec;
+  --nous-secondary: #4a5a6a;
+  --nous-tertiary:  #1e2428;
+  --nous-success:   #5c9e7a;
+  --nous-warning:   #9e9060;
+  --nous-error:     #a05a5a;
 }
 
 /* ─── Base ─── */
@@ -63,13 +66,18 @@ body {
   height: 100%;
   color: var(--nous-primary);
   background: var(--nous-bg);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Inter', sans-serif;
+  font-family: var(--font-outfit), 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: -0.01em;
 }
 
-/* Hide scrollbars globally (keep scroll functionality) */
+/* ─── Typography utilities ─── */
+.font-display {
+  font-family: var(--font-outfit), 'Helvetica Neue', sans-serif;
+}
+
+/* Hide scrollbars globally */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 
@@ -78,24 +86,26 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
-html.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); }
-html.dark ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+html.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); }
+html.dark ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); }
 
 /* ─── Glass morphism ─── */
 .glass {
-  background: rgba(247, 247, 251, 0.85);
-  backdrop-filter: saturate(180%) blur(24px);
-  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
   border: 1px solid rgba(0, 0, 0, 0.07);
 }
 html.dark .glass {
-  background: rgba(22, 22, 30, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(24, 29, 33, 0.9);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.065);
 }
 
 /* ─── Gradient text ─── */
 .gradient-text {
-  background: linear-gradient(135deg, #7c7aff 0%, #a78bfa 50%, #30c48d 100%);
+  background: linear-gradient(135deg, #94a8bc 0%, #dde4ec 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -103,21 +113,24 @@ html.dark .glass {
 
 /* ─── Animations ─── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 @keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  33%       { transform: translateY(-6px) rotate(0.8deg); }
-  66%       { transform: translateY(-3px) rotate(-0.8deg); }
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
 }
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(124,122,255,0.25); }
-  50%       { box-shadow: 0 0 36px rgba(124,122,255,0.5); }
+  0%, 100% { box-shadow: 0 0 16px rgba(45,139,139,0.15); }
+  50%       { box-shadow: 0 0 32px rgba(45,139,139,0.35); }
 }
 @keyframes shimmer {
   0%   { background-position: -200% center; }
@@ -126,15 +139,17 @@ html.dark .glass {
 
 .animate-fadeUp    { animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards; }
 .animate-fadeIn    { animation: fadeIn 0.35s ease forwards; }
-.animate-float     { animation: float 7s ease-in-out infinite; }
+.animate-slideUp   { animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1) forwards; }
+.animate-float     { animation: float 8s ease-in-out infinite; }
 .animate-pulseGlow { animation: pulse-glow 3s ease-in-out infinite; }
 
 /* ─── Stagger ─── */
 .stagger > *:nth-child(1) { animation-delay: 0ms; }
-.stagger > *:nth-child(2) { animation-delay: 50ms; }
-.stagger > *:nth-child(3) { animation-delay: 100ms; }
-.stagger > *:nth-child(4) { animation-delay: 150ms; }
-.stagger > *:nth-child(5) { animation-delay: 200ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+.stagger > *:nth-child(6) { animation-delay: 300ms; }
 
 /* ─── ContentEditable placeholder ─── */
 [contenteditable][data-placeholder]:empty::before {
@@ -145,7 +160,7 @@ html.dark .glass {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   Notion × Obsidian — Editor content styles
+   Note Editor Content Styles
    ════════════════════════════════════════════════════════════════════════════ */
 
 .obsidian-content {
@@ -155,29 +170,29 @@ html.dark .glass {
   min-height: 300px;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  font-family: var(--font-outfit), 'Helvetica Neue', sans-serif;
 }
 
-/* Headings — Notion-style clean typography */
 .obsidian-content h1 {
-  font-size: 30px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--nous-primary);
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
   margin: 2em 0 0.6em;
   line-height: 1.2;
   padding-bottom: 0.4em;
   border-bottom: 1px solid var(--nous-border);
 }
 .obsidian-content h2 {
-  font-size: 24px;
+  font-size: 21px;
   font-weight: 600;
   color: var(--nous-primary);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   margin: 1.6em 0 0.5em;
   line-height: 1.3;
 }
 .obsidian-content h3 {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
   color: var(--nous-primary);
   letter-spacing: -0.01em;
@@ -185,69 +200,40 @@ html.dark .glass {
   line-height: 1.4;
 }
 
-/* Paragraphs */
-.obsidian-content p {
-  margin: 0.5em 0;
-}
+.obsidian-content p { margin: 0.5em 0; }
 
-/* Inline text */
-.obsidian-content strong {
-  color: var(--nous-primary);
-  font-weight: 600;
-}
-.obsidian-content em {
-  color: var(--nous-accent);
-  font-style: italic;
-}
-.obsidian-content s {
-  color: var(--nous-secondary);
-  text-decoration: line-through;
-}
+.obsidian-content strong { color: var(--nous-primary); font-weight: 600; }
+.obsidian-content em { color: var(--nous-accent); font-style: italic; }
+.obsidian-content s { color: var(--nous-secondary); text-decoration: line-through; }
+
 .obsidian-content a {
   color: var(--nous-accent);
   text-decoration: underline;
-  text-decoration-color: rgba(124,122,255,0.3);
+  text-decoration-color: rgba(45,139,139,0.3);
   text-underline-offset: 3px;
   transition: text-decoration-color 0.15s;
 }
-.obsidian-content a:hover {
-  text-decoration-color: var(--nous-accent);
-}
+.obsidian-content a:hover { text-decoration-color: var(--nous-accent); }
 
-/* Lists — refined spacing */
-.obsidian-content ul, .obsidian-content ol {
-  padding-left: 1.6em;
-  margin: 0.6em 0;
-}
-.obsidian-content li {
-  margin: 0.35em 0;
-  padding-left: 0.2em;
-}
-.obsidian-content ul li::marker {
-  color: var(--nous-accent);
-  font-size: 0.7em;
-}
-.obsidian-content ol li::marker {
-  color: var(--nous-accent);
-  font-weight: 500;
-}
+.obsidian-content ul, .obsidian-content ol { padding-left: 1.6em; margin: 0.6em 0; }
+.obsidian-content li { margin: 0.35em 0; padding-left: 0.2em; }
+.obsidian-content ul li::marker { color: var(--nous-accent); font-size: 0.7em; }
+.obsidian-content ol li::marker { color: var(--nous-accent); font-weight: 500; }
 
-/* Inline code */
 .obsidian-content code {
-  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
-  font-size: 0.875em;
-  background: rgba(124,122,255,0.07);
-  border: 1px solid rgba(124,122,255,0.15);
-  border-radius: 5px;
+  font-family: var(--font-ibm-plex-mono), 'Courier New', monospace;
+  font-size: 0.85em;
+  background: rgba(45,139,139,0.07);
+  border: 1px solid rgba(45,139,139,0.15);
+  border-radius: 4px;
   padding: 2px 7px;
   color: var(--nous-accent);
 }
 
-/* Pre/code blocks */
 .obsidian-content pre {
   background: var(--nous-card);
   border: 1px solid var(--nous-border);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 18px 20px;
   overflow-x: auto;
   margin: 1.2em 0;
@@ -261,18 +247,16 @@ html.dark .glass {
   line-height: 1.7;
 }
 
-/* Blockquote — Notion-style */
 .obsidian-content blockquote {
-  border-left: 3px solid var(--nous-accent);
+  border-left: 2px solid var(--nous-accent);
   padding: 8px 20px;
   margin: 1.2em 0;
   color: var(--nous-secondary);
   font-style: italic;
-  background: rgba(124,122,255,0.04);
-  border-radius: 0 10px 10px 0;
+  background: rgba(45,139,139,0.04);
+  border-radius: 0 8px 8px 0;
 }
 
-/* Horizontal rule */
 .obsidian-content hr {
   border: none;
   height: 1px;
@@ -280,30 +264,27 @@ html.dark .glass {
   margin: 2em 0;
 }
 
-/* Wiki-link style [[...]] */
 .obsidian-content .wiki-link {
   color: var(--nous-accent);
-  background: rgba(124,122,255,0.08);
+  background: rgba(45,139,139,0.08);
   border-radius: 4px;
   padding: 1px 5px;
   cursor: pointer;
   transition: background 0.15s;
 }
-.obsidian-content .wiki-link:hover {
-  background: rgba(124,122,255,0.15);
-}
+.obsidian-content .wiki-link:hover { background: rgba(45,139,139,0.15); }
 
 /* ─── Code block inserted by toolbar ─── */
 .note-code-block {
   display: block;
-  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Fira Mono', Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-ibm-plex-mono), 'Courier New', monospace;
   font-size: 13px;
   line-height: 1.7;
   color: var(--nous-primary);
   background: var(--nous-card);
   border: 1px solid var(--nous-border);
-  border-left: 3px solid #30c48d;
-  border-radius: 10px;
+  border-left: 2px solid var(--nous-accent2);
+  border-radius: 8px;
   padding: 16px 20px;
   margin: 16px 0;
   white-space: pre-wrap;
@@ -312,9 +293,9 @@ html.dark .glass {
   tab-size: 2;
 }
 .note-code-block:focus {
-  border-color: rgba(48, 196, 141, 0.35);
-  background: rgba(48, 196, 141, 0.04);
-  box-shadow: 0 0 0 3px rgba(48, 196, 141, 0.06);
+  border-color: rgba(90,138,128,0.35);
+  background: rgba(90,138,128,0.04);
+  box-shadow: 0 0 0 3px rgba(90,138,128,0.06);
 }
 
 /* ─── Placeholder for contentEditable ─── */
