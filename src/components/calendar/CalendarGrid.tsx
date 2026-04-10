@@ -354,7 +354,7 @@ export const CalendarGrid = ({
                     background: isToday ? "var(--nous-accent)" : "transparent",
                     color: isToday ? "#fff" : "var(--nous-primary)",
                     boxShadow: isToday
-                      ? "0 0 12px rgba(45,139,139,0.4)"
+                      ? "0 0 12px rgba(var(--nous-accent-rgb),0.4)"
                       : "none",
                   }}
                 >
@@ -454,9 +454,9 @@ export const CalendarGrid = ({
                   height: ghostHeight,
                   left: drag.ghostColIndex * ghostColW + 4,
                   width: ghostColW - 8,
-                  background: drag.event.color || "#2d8b8b",
-                  boxShadow: `0 4px 20px ${drag.event.color || "#2d8b8b"}60`,
-                  border: `2px solid ${drag.event.color || "#2d8b8b"}`,
+                  background: drag.event.color || "var(--nous-accent)",
+                  boxShadow: drag.event.color ? `0 4px 20px ${drag.event.color}60` : "0 4px 20px rgba(var(--nous-accent-rgb),0.38)",
+                  border: `2px solid ${drag.event.color || "var(--nous-accent)"}`,
                   backdropFilter: "blur(4px)",
                 }}
               >
@@ -490,7 +490,7 @@ export const CalendarGrid = ({
                     borderLeft:
                       colPos > 0 ? "1px solid var(--nous-border)" : "none",
                     background: isToday
-                      ? "rgba(45,139,139,0.018)"
+                      ? "rgba(var(--nous-accent-rgb),0.018)"
                       : "transparent",
                   }}
                   onClick={(e) => {
@@ -539,8 +539,8 @@ export const CalendarGrid = ({
                           height: height - 2,
                           left: `calc(${leftPct} + 2px)`,
                           width: `calc(${widthPct} - 4px)`,
-                          background: event.color || "#2d8b8b",
-                          boxShadow: `0 2px 8px ${event.color || "#2d8b8b"}40`,
+                          background: event.color || "var(--nous-accent)",
+                          boxShadow: event.color ? `0 2px 8px ${event.color}40` : "0 2px 8px rgba(var(--nous-accent-rgb),0.25)",
                           zIndex: 10,
                           opacity: isDragging ? 0.3 : 1,
                           cursor: drag && !drag.started ? "grabbing" : "grab",
@@ -627,7 +627,7 @@ export const CalendarGrid = ({
                           className="text-[9px] font-medium truncate"
                           style={{ color: "#30c48d" }}
                         >
-                          ✦ {task.task}
+                          {task.task}
                         </p>
                       </div>
                     );

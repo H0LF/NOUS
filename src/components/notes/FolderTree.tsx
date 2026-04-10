@@ -52,7 +52,7 @@ export const FolderTree = ({ className = "" }: FolderTreeProps) => {
   };
 
   const itemStyle = (active: boolean) => ({
-    background: active ? 'rgba(45,139,139,0.1)' : 'transparent',
+    background: active ? 'rgba(var(--nous-accent-rgb),0.1)' : 'transparent',
     color: active ? 'var(--nous-accent)' : 'var(--nous-secondary)',
     borderRadius: '6px',
     padding: '5px 8px',
@@ -97,7 +97,7 @@ export const FolderTree = ({ className = "" }: FolderTreeProps) => {
             className="w-full text-[11px] px-2 py-1.5 rounded-md outline-none"
             style={{
               background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(45,139,139,0.3)',
+              border: '1px solid rgba(var(--nous-accent-rgb),0.3)',
               color: 'var(--nous-primary)',
             }}
           />

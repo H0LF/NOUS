@@ -28,15 +28,7 @@ interface NoteEditorProps {
 }
 
 // ── Drawing canvas ────────────────────────────────────────────────────────────
-const DRAW_COLORS = [
-  "#e8e8f0",
-  "#2d8b8b",
-  "#30c48d",
-  "#e879f9",
-  "#f87171",
-  "#60a5fa",
-  "#000000",
-];
+const DRAW_COLORS_BASE = ["#e8e8f0", "#30c48d", "#e879f9", "#f87171", "#60a5fa", "#000000"];
 const DRAW_SIZES = [2, 4, 8, 16];
 
 interface DrawCanvasProps {
@@ -45,13 +37,46 @@ interface DrawCanvasProps {
   onClose: () => void;
 }
 
+type DrawTemplate = "blank" | "lined" | "grid" | "dotted";
+
 const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
+  const accentColor =
+    typeof window !== "undefined"
+      ? getComputedStyle(document.documentElement).getPropertyValue("--nous-accent").trim() || "#2d8b8b"
+      : "#2d8b8b";
+  const DRAW_COLORS = [accentColor, ...DRAW_COLORS_BASE];
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
-  const lastPos = useRef<{ x: number; y: number } | null>(null);
+  const lastPos = useRef<{ x: number; y: number; pressure: number } | null>(null);
   const [color, setColor] = useState("#e8e8f0");
   const [size, setSize] = useState(4);
   const [tool, setTool] = useState<"pen" | "eraser">("pen");
+  const [template, setTemplate] = useState<DrawTemplate>("blank");
+  const [showTemplates, setShowTemplates] = useState(false);
+  const BG_COLOR = "#0f0f15";
+
+  const drawTemplate = useCallback((ctx: CanvasRenderingContext2D, t: DrawTemplate, W: number, H: number) => {
+    ctx.fillStyle = BG_COLOR;
+    ctx.fillRect(0, 0, W, H);
+    if (t === "blank") return;
+    const step = 28;
+    ctx.strokeStyle = "rgba(255,255,255,0.06)";
+    ctx.lineWidth = 0.5;
+    if (t === "lined") {
+      for (let y = step; y < H; y += step) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+    } else if (t === "grid") {
+      for (let x = step; x < W; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+      for (let y = step; y < H; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    } else if (t === "dotted") {
+      for (let x = step; x < W; x += step) {
+        for (let y = step; y < H; y += step) {
+          ctx.beginPath(); ctx.arc(x, y, 1, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,0.12)"; ctx.fill();
+        }
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -59,49 +84,58 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
     const ctx = canvas.getContext("2d")!;
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
-    ctx.fillStyle = "#0f0f15";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawTemplate(ctx, template, canvas.width, canvas.height);
     if (initialDataUrl) {
       const img = new Image();
       img.onload = () => ctx.drawImage(img, 0, 0);
       img.src = initialDataUrl;
     }
-  }, [initialDataUrl]);
+  }, [initialDataUrl, template, drawTemplate]);
 
-  const getPos = (e: React.MouseEvent | React.TouchEvent) => {
+  const getPointerPos = (e: React.PointerEvent) => {
     const canvas = canvasRef.current!;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    if ("touches" in e) {
-      return {
-        x: (e.touches[0].clientX - rect.left) * scaleX,
-        y: (e.touches[0].clientY - rect.top) * scaleY,
-      };
-    }
     return {
       x: (e.clientX - rect.left) * scaleX,
       y: (e.clientY - rect.top) * scaleY,
+      pressure: e.pressure > 0 ? e.pressure : 0.5,
     };
   };
 
-  const startDraw = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    isDrawing.current = true;
-    lastPos.current = getPos(e);
+  const isPalmRejected = (e: React.PointerEvent) => {
+    // Reject large-area touch events (palm) — only allow stylus or single-touch
+    if (e.pointerType === "pen") return false;
+    if (e.pointerType === "mouse") return false;
+    // Touch: reject if contact area is large (likely palm)
+    const area = e as unknown as { width?: number; height?: number };
+    if ((area.width ?? 1) > 30 || (area.height ?? 1) > 30) return true;
+    return false;
   };
 
-  const draw = (e: React.MouseEvent | React.TouchEvent) => {
+  const startDraw = (e: React.PointerEvent) => {
+    if (isPalmRejected(e)) return;
+    e.preventDefault();
+    canvasRef.current?.setPointerCapture(e.pointerId);
+    isDrawing.current = true;
+    lastPos.current = getPointerPos(e);
+  };
+
+  const draw = (e: React.PointerEvent) => {
+    if (isPalmRejected(e)) return;
     e.preventDefault();
     if (!isDrawing.current || !lastPos.current) return;
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext("2d")!;
-    const pos = getPos(e);
+    const pos = getPointerPos(e);
+    const pressureScale = pos.pressure;
     ctx.beginPath();
     ctx.moveTo(lastPos.current.x, lastPos.current.y);
     ctx.lineTo(pos.x, pos.y);
-    ctx.strokeStyle = tool === "eraser" ? "#0f0f15" : color;
-    ctx.lineWidth = tool === "eraser" ? size * 4 : size;
+    ctx.strokeStyle = tool === "eraser" ? BG_COLOR : color;
+    // Pressure affects line width
+    ctx.lineWidth = tool === "eraser" ? size * 4 : size * (0.5 + pressureScale * 1.5);
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.stroke();
@@ -116,14 +150,20 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
   const clear = () => {
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext("2d")!;
-    ctx.fillStyle = "#0f0f15";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawTemplate(ctx, template, canvas.width, canvas.height);
   };
 
   const save = () => {
     const canvas = canvasRef.current!;
     onSave(canvas.toDataURL("image/png"));
   };
+
+  const TEMPLATES: { id: DrawTemplate; label: string }[] = [
+    { id: "blank",  label: "Blank" },
+    { id: "lined",  label: "Lined" },
+    { id: "grid",   label: "Grid" },
+    { id: "dotted", label: "Dotted" },
+  ];
 
   return (
     <div
@@ -146,9 +186,8 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
               onClick={() => setTool(t)}
               className="px-3 py-1.5 text-[12px] font-medium transition-all duration-150"
               style={{
-                background:
-                  tool === t ? "rgba(45,139,139,0.15)" : "transparent",
-                color: tool === t ? "#2d8b8b" : "var(--nous-secondary)",
+                background: tool === t ? "rgba(var(--nous-accent-rgb),0.15)" : "transparent",
+                color: tool === t ? "var(--nous-accent)" : "var(--nous-secondary)",
               }}
             >
               {t === "pen" ? "Pen" : "Eraser"}
@@ -156,26 +195,57 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
           ))}
         </div>
 
+        {/* Template picker */}
+        <div className="relative">
+          <button
+            onClick={() => setShowTemplates((v) => !v)}
+            className="px-3 py-1.5 text-[12px] font-medium rounded-lg transition-all duration-150 flex items-center gap-1.5"
+            style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid var(--nous-border)",
+              color: "var(--nous-secondary)",
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="3" y1="15" x2="21" y2="15"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+            </svg>
+            {TEMPLATES.find(t => t.id === template)?.label}
+          </button>
+          {showTemplates && (
+            <div
+              className="absolute top-full mt-1 left-0 z-50 rounded-xl py-1.5 shadow-2xl"
+              style={{ background: "#1a1a24", border: "1px solid rgba(var(--nous-accent-rgb),0.2)", minWidth: 120 }}
+            >
+              {TEMPLATES.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => { setTemplate(t.id); setShowTemplates(false); }}
+                  className="w-full text-left px-3 py-2 text-[12px] transition-colors"
+                  style={{ color: template === t.id ? "var(--nous-accent)" : "var(--nous-primary)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(var(--nous-accent-rgb),0.1)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Colors */}
         <div className="flex items-center gap-1.5">
           {DRAW_COLORS.map((c) => (
             <button
               key={c}
-              onClick={() => {
-                setColor(c);
-                setTool("pen");
-              }}
+              onClick={() => { setColor(c); setTool("pen"); }}
               className="w-6 h-6 rounded-full transition-all duration-150 hover:scale-110"
               style={{
                 background: c,
-                border:
-                  color === c && tool === "pen"
-                    ? "2px solid var(--nous-accent)"
-                    : "2px solid var(--nous-border)",
-                boxShadow:
-                  color === c && tool === "pen"
-                    ? "0 0 8px rgba(45,139,139,0.4)"
-                    : "none",
+                border: color === c && tool === "pen" ? "2px solid var(--nous-accent)" : "2px solid var(--nous-border)",
+                boxShadow: color === c && tool === "pen" ? "0 0 8px rgba(var(--nous-accent-rgb),0.4)" : "none",
               }}
             />
           ))}
@@ -188,17 +258,14 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
               key={s}
               onClick={() => setSize(s)}
               className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150"
-              style={{
-                background:
-                  size === s ? "rgba(45,139,139,0.12)" : "transparent",
-              }}
+              style={{ background: size === s ? "rgba(var(--nous-accent-rgb),0.12)" : "transparent" }}
             >
               <div
                 className="rounded-full"
                 style={{
                   width: Math.min(s * 2, 18),
                   height: Math.min(s * 2, 18),
-                  background: size === s ? "#2d8b8b" : "var(--nous-tertiary)",
+                  background: size === s ? "var(--nous-accent)" : "var(--nous-tertiary)",
                 }}
               />
             </button>
@@ -210,32 +277,18 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
         <button
           onClick={clear}
           className="px-4 py-2 text-[12px] font-medium rounded-lg transition-all duration-150"
-          style={{
-            color: "#f87171",
-            border: "1px solid rgba(248,113,113,0.15)",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background = "rgba(248,113,113,0.1)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background = "transparent")
-          }
+          style={{ color: "#f87171", border: "1px solid rgba(248,113,113,0.15)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(248,113,113,0.1)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
         >
           Clear
         </button>
         <button
           onClick={save}
           className="px-4 py-2 text-[12px] font-semibold rounded-lg transition-all duration-150"
-          style={{
-            background: "var(--nous-accent)",
-            color: "#fff",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.opacity = "0.85")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.opacity = "1")
-          }
+          style={{ background: "var(--nous-accent)", color: "#fff" }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
         >
           Save
         </button>
@@ -253,18 +306,16 @@ const DrawCanvas = ({ initialDataUrl, onSave, onClose }: DrawCanvasProps) => {
         </button>
       </div>
 
-      {/* Canvas */}
+      {/* Canvas — uses PointerEvents for pressure sensitivity + palm rejection */}
       <canvas
         ref={canvasRef}
         className="flex-1 w-full touch-none"
         style={{ cursor: tool === "eraser" ? "cell" : "crosshair" }}
-        onMouseDown={startDraw}
-        onMouseMove={draw}
-        onMouseUp={endDraw}
-        onMouseLeave={endDraw}
-        onTouchStart={startDraw}
-        onTouchMove={draw}
-        onTouchEnd={endDraw}
+        onPointerDown={startDraw}
+        onPointerMove={draw}
+        onPointerUp={endDraw}
+        onPointerLeave={endDraw}
+        onPointerCancel={endDraw}
       />
     </div>
   );
@@ -301,8 +352,6 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
   const [status, setStatus] = useState<"saved" | "saving" | "">("");
   const titleRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const lastNoteId = useRef<string | null>(null);
-
   const [backlinks, setBacklinks] = useState<Note[]>([]);
 
   const [wikilinkSearch, setWikilinkSearch] = useState<string | null>(null);
@@ -312,6 +361,23 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
     bracketOffset: number;
     cursorOffset: number;
   } | null>(null);
+
+  // Slash-command menu
+  const [slashSearch, setSlashSearch] = useState<string | null>(null);
+  const [slashPos, setSlashPos] = useState({ top: 0, left: 0 });
+  const slashRangeRef = useRef<{ node: Text; slashOffset: number; cursorOffset: number } | null>(null);
+
+  const SLASH_COMMANDS = [
+    { id: "h1",         label: "Heading 1",    icon: "H1", action: () => execCmd("formatBlock", "h1") },
+    { id: "h2",         label: "Heading 2",    icon: "H2", action: () => execCmd("formatBlock", "h2") },
+    { id: "h3",         label: "Heading 3",    icon: "H3", action: () => execCmd("formatBlock", "h3") },
+    { id: "blockquote", label: "Quote",         icon: "\"", action: () => execCmd("formatBlock", "blockquote") },
+    { id: "code",       label: "Code block",   icon: "</>", action: () => insertCodeBlock() },
+    { id: "ul",         label: "Bullet list",  icon: "•",  action: () => execCmd("insertUnorderedList") },
+    { id: "ol",         label: "Numbered list",icon: "1.", action: () => execCmd("insertOrderedList") },
+    { id: "hr",         label: "Divider",      icon: "—",  action: () => execCmd("insertHorizontalRule") },
+    { id: "bold",       label: "Bold",         icon: "B",  action: () => execCmd("bold") },
+  ];
 
   useEffect(() => {
     if (!openNoteId) {
@@ -333,8 +399,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
       setNote(null);
       return;
     }
-    if (lastNoteId.current === openNoteId) return;
-    lastNoteId.current = openNoteId;
+    if (note?.id === openNoteId) return;
     setWikilinkSearch(null);
     const data = allNotes.find((n) => n.id === openNoteId) ?? null;
     if (data) {
@@ -345,7 +410,8 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
       if (titleRef.current) titleRef.current.innerText = data.title;
       if (contentRef.current) contentRef.current.innerHTML = data.content;
     }
-  }, [openNoteId, user, allNotes]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openNoteId, user, allNotes, note?.id]);
 
   const saveNote = async (
     newTitle: string,
@@ -371,33 +437,64 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
     const sel = window.getSelection();
     if (!sel || !sel.rangeCount || !contentRef.current) {
       setWikilinkSearch(null);
+      setSlashSearch(null);
       return;
     }
     const range = sel.getRangeAt(0);
     const container = range.startContainer;
     if (container.nodeType !== Node.TEXT_NODE) {
       setWikilinkSearch(null);
+      setSlashSearch(null);
       return;
     }
     const text = container.textContent?.slice(0, range.startOffset) ?? "";
+    const rect = range.getBoundingClientRect();
+    const cRect = contentRef.current.getBoundingClientRect();
+    const posBase = { top: rect.bottom - cRect.top + 4, left: Math.max(0, rect.left - cRect.left) };
+
+    // Slash command detection — only when the line starts with "/"
+    const lineStart = text.lastIndexOf("\n") + 1;
+    const lineText = text.slice(lineStart);
+    if (lineText.startsWith("/")) {
+      const search = lineText.slice(1);
+      slashRangeRef.current = { node: container as Text, slashOffset: lineStart, cursorOffset: range.startOffset };
+      setSlashPos(posBase);
+      setSlashSearch(search);
+      setWikilinkSearch(null);
+      return;
+    }
+    setSlashSearch(null);
+
+    // Wiki-link detection
     const lastBracket = text.lastIndexOf("[[");
     if (lastBracket === -1 || text.slice(lastBracket).includes("]")) {
       setWikilinkSearch(null);
       return;
     }
     const search = text.slice(lastBracket + 2);
-    const rect = range.getBoundingClientRect();
-    const cRect = contentRef.current.getBoundingClientRect();
     wikilinkRangeRef.current = {
       node: container as Text,
       bracketOffset: lastBracket,
       cursorOffset: range.startOffset,
     };
-    setWikilinkPos({
-      top: rect.bottom - cRect.top + 4,
-      left: Math.max(0, rect.left - cRect.left),
-    });
+    setWikilinkPos(posBase);
     setWikilinkSearch(search);
+  }, []);
+
+  const runSlashCommand = useCallback((action: () => void) => {
+    // Delete the "/" + whatever was typed before running the command
+    const info = slashRangeRef.current;
+    if (info) {
+      const range = document.createRange();
+      range.setStart(info.node, info.slashOffset);
+      range.setEnd(info.node, info.cursorOffset);
+      range.deleteContents();
+      const sel = window.getSelection();
+      if (sel) { sel.removeAllRanges(); sel.addRange(range); }
+    }
+    setSlashSearch(null);
+    slashRangeRef.current = null;
+    action();
   }, []);
 
   const insertWikilink = useCallback(
@@ -438,33 +535,117 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
   };
 
   const handleContentKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Escape" && wikilinkSearch !== null) {
+    if (e.key === "Escape" && (wikilinkSearch !== null || slashSearch !== null)) {
       e.preventDefault();
       setWikilinkSearch(null);
+      setSlashSearch(null);
       return;
     }
-    if (e.key !== "Backspace" && e.key !== "Delete" && e.key !== "Escape")
-      return;
+    // Enter/Tab to pick the first slash command
+    if ((e.key === "Enter" || e.key === "Tab") && slashSearch !== null) {
+      const filtered = SLASH_COMMANDS.filter(
+        (c) => c.label.toLowerCase().includes(slashSearch.toLowerCase()) || c.id.startsWith(slashSearch.toLowerCase())
+      );
+      if (filtered.length > 0) {
+        e.preventDefault();
+        runSlashCommand(filtered[0].action);
+        return;
+      }
+    }
+
     const sel = window.getSelection();
     if (!sel || !sel.rangeCount) return;
-    let node: Node | null = sel.getRangeAt(0).commonAncestorContainer;
+    const range = sel.getRangeAt(0);
+
+    // ── Blockquote: Enter on empty line exits the blockquote ──
+    if (e.key === "Enter" && !e.shiftKey) {
+      let bq: Node | null = range.commonAncestorContainer;
+      while (bq && bq !== contentRef.current) {
+        if (bq instanceof HTMLElement && bq.tagName === "BLOCKQUOTE") break;
+        bq = bq.parentNode;
+      }
+      if (bq instanceof HTMLElement && bq.tagName === "BLOCKQUOTE") {
+        // Check if the current line inside the blockquote is empty
+        const lineText = range.commonAncestorContainer.textContent ?? "";
+        const atStart = range.startOffset === 0;
+        if (lineText.trim() === "" || atStart) {
+          e.preventDefault();
+          // Insert a paragraph after the blockquote and move cursor into it
+          const p = document.createElement("p");
+          p.innerHTML = "<br>";
+          bq.insertAdjacentElement("afterend", p);
+          const newRange = document.createRange();
+          newRange.setStart(p, 0);
+          newRange.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+          p.focus();
+          const c = contentRef.current?.innerHTML ?? "";
+          setContent(c);
+          debouncedSave(title, c, drawing);
+          return;
+        }
+      }
+    }
+
+    if (e.key !== "Backspace" && e.key !== "Delete" && e.key !== "Escape")
+      return;
+
+    let node: Node | null = range.commonAncestorContainer;
     while (node && node !== contentRef.current) {
       if (
         node instanceof HTMLElement &&
-        node.classList.contains("note-code-block")
+        (node.classList.contains("note-code-block") || node.classList.contains("note-code-wrapper"))
       ) {
-        const isEmpty = node.textContent?.trim() === "";
+        const codeNode = node.classList.contains("note-code-wrapper") ? node : node.closest(".note-code-wrapper") as HTMLElement ?? node;
+        const isEmpty = (codeNode.querySelector(".note-code-block") ?? codeNode).textContent?.trim() === "";
         if (isEmpty || e.key === "Escape") {
           e.preventDefault();
-          node.remove();
+          codeNode.remove();
           const c = contentRef.current?.innerHTML ?? "";
           setContent(c);
           debouncedSave(title, c, drawing);
         }
         return;
       }
+      // Backspace at the very start of a blockquote exits it
+      if (
+        e.key === "Backspace" &&
+        node instanceof HTMLElement &&
+        node.tagName === "BLOCKQUOTE" &&
+        range.startOffset === 0
+      ) {
+        e.preventDefault();
+        document.execCommand("outdent");
+        const c = contentRef.current?.innerHTML ?? "";
+        setContent(c);
+        debouncedSave(title, c, drawing);
+        return;
+      }
       node = node.parentNode;
     }
+  };
+
+  // ── Click anywhere in editor area → place cursor using caret position ──
+  const handleContentAreaClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Only handle clicks directly on the wrapper (not bubbled from text/elements)
+    if (e.target !== e.currentTarget) return;
+    const range =
+      (document as Document & { caretRangeFromPoint?: (x: number, y: number) => Range | null }).caretRangeFromPoint?.(e.clientX, e.clientY) ??
+      (() => {
+        const pos = (document as Document & { caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null }).caretPositionFromPoint?.(e.clientX, e.clientY);
+        if (!pos) return null;
+        const r = document.createRange();
+        r.setStart(pos.offsetNode, pos.offset);
+        r.collapse(true);
+        return r;
+      })();
+    if (!range) return;
+    const sel = window.getSelection();
+    if (!sel) return;
+    sel.removeAllRanges();
+    sel.addRange(range);
+    contentRef.current?.focus();
   };
 
   const execCmd = (cmd: string, val?: string) => {
@@ -476,23 +657,67 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
     }
   };
 
-  const insertCodeBlock = () => {
+  const insertCodeBlock = (lang = "js") => {
     contentRef.current?.focus();
     const sel = window.getSelection();
     if (!sel || !sel.rangeCount) return;
     const range = sel.getRangeAt(0);
+    const selectedText = sel.toString();
+
+    // Wrapper
+    const wrapper = document.createElement("div");
+    wrapper.className = "note-code-wrapper";
+    wrapper.contentEditable = "false";
+
+    // Toolbar
+    const toolbar = document.createElement("div");
+    toolbar.className = "note-code-toolbar";
+
+    const langSelect = document.createElement("select");
+    langSelect.className = "note-code-lang";
+    langSelect.style.cssText = "background:transparent;border:none;outline:none;cursor:pointer;color:var(--nous-accent);font:inherit;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;";
+    ["js","ts","py","css","html","json","bash","go","rust","java","cpp"].forEach((l) => {
+      const opt = document.createElement("option");
+      opt.value = l;
+      opt.textContent = l;
+      if (l === lang) opt.selected = true;
+      langSelect.appendChild(opt);
+    });
+
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "note-code-copy";
+    copyBtn.textContent = "Copy";
+    copyBtn.type = "button";
+    copyBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const code = pre.textContent ?? "";
+      navigator.clipboard.writeText(code).then(() => {
+        copyBtn.textContent = "Copied!";
+        setTimeout(() => { copyBtn.textContent = "Copy"; }, 1500);
+      });
+    });
+
+    toolbar.appendChild(langSelect);
+    toolbar.appendChild(copyBtn);
+    wrapper.appendChild(toolbar);
+
+    // Code area
     const pre = document.createElement("pre");
     pre.className = "note-code-block";
     pre.contentEditable = "true";
     pre.spellcheck = false;
-    pre.textContent = sel.toString() || "// code here";
+    pre.textContent = selectedText || "// code here";
+    wrapper.appendChild(pre);
+
     range.deleteContents();
-    range.insertNode(pre);
+    range.insertNode(wrapper);
+
     const newRange = document.createRange();
     newRange.selectNodeContents(pre);
     newRange.collapse(false);
     sel.removeAllRanges();
     sel.addRange(newRange);
+
     setTimeout(() => {
       if (contentRef.current) {
         const c = contentRef.current.innerHTML;
@@ -517,13 +742,13 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
       >
         <div className="flex flex-col items-center gap-4 opacity-60">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
-            style={{ background: "rgba(45,139,139,0.06)" }}>
+            style={{ background: "rgba(var(--nous-accent-rgb),0.06)" }}>
             <svg
               width="28"
               height="28"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#2d8b8b"
+              stroke="var(--nous-accent)"
               strokeWidth="1.2"
             >
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -554,11 +779,11 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
       className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150"
       style={{
         color: active ? "var(--nous-primary)" : "var(--nous-secondary)",
-        background: active ? "rgba(45,139,139,0.12)" : "transparent",
+        background: active ? "rgba(var(--nous-accent-rgb),0.12)" : "transparent",
       }}
       title={btnTitle}
       onMouseEnter={(e) => { e.currentTarget.style.color = "var(--nous-primary)"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.color = active ? "var(--nous-primary)" : "var(--nous-secondary)"; e.currentTarget.style.background = active ? "rgba(45,139,139,0.12)" : "transparent"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.color = active ? "var(--nous-primary)" : "var(--nous-secondary)"; e.currentTarget.style.background = active ? "rgba(var(--nous-accent-rgb),0.12)" : "transparent"; }}
     >
       {children}
     </button>
@@ -691,6 +916,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
       <div
         className="flex-1 overflow-y-auto relative"
         style={{ scrollbarWidth: "none" }}
+        onClick={handleContentAreaClick}
       >
         {/* Wikilink autocomplete dropdown */}
         {wikilinkSearch !== null &&
@@ -713,7 +939,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
                   top: wikilinkPos.top,
                   left: wikilinkPos.left,
                   background: "#1a1a24",
-                  border: "1px solid rgba(45,139,139,0.2)",
+                  border: "1px solid rgba(var(--nous-accent-rgb),0.2)",
                   minWidth: 240,
                   boxShadow: "0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)",
                 }}
@@ -735,7 +961,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
                     style={{ color: "var(--nous-primary)" }}
                     onMouseEnter={(e) =>
                       (e.currentTarget.style.background =
-                        "rgba(45,139,139,0.10)")
+                        "rgba(var(--nous-accent-rgb),0.10)")
                     }
                     onMouseLeave={(e) =>
                       (e.currentTarget.style.background = "transparent")
@@ -746,13 +972,57 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
                       height="14"
                       viewBox="0 0 24 24"
                       fill="none"
-                      stroke="#2d8b8b"
+                      stroke="var(--nous-accent)"
                       strokeWidth="1.5"
                     >
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                       <polyline points="14 2 14 8 20 8" />
                     </svg>
                     {n.title || "Untitled"}
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
+
+        {/* Slash-command menu */}
+        {slashSearch !== null &&
+          (() => {
+            const filtered = SLASH_COMMANDS.filter(
+              (c) => c.label.toLowerCase().includes(slashSearch.toLowerCase()) || c.id.startsWith(slashSearch.toLowerCase())
+            );
+            if (filtered.length === 0) return null;
+            return (
+              <div
+                className="absolute z-50 rounded-xl py-1.5 shadow-2xl"
+                style={{
+                  top: slashPos.top,
+                  left: slashPos.left,
+                  background: "#1a1a24",
+                  border: "1px solid rgba(var(--nous-accent-rgb),0.2)",
+                  minWidth: 220,
+                  boxShadow: "0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)",
+                }}
+              >
+                <div className="px-3 py-2 text-[11px] font-medium" style={{ color: "var(--nous-secondary)" }}>
+                  Insert block
+                </div>
+                {filtered.map((cmd) => (
+                  <button
+                    key={cmd.id}
+                    onMouseDown={(e) => { e.preventDefault(); runSlashCommand(cmd.action); }}
+                    className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-[13px] transition-all duration-100"
+                    style={{ color: "var(--nous-primary)" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(var(--nous-accent-rgb),0.10)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <span
+                      className="w-7 h-7 rounded-md flex items-center justify-center text-[11px] font-bold shrink-0"
+                      style={{ background: "rgba(var(--nous-accent-rgb),0.12)", color: "var(--nous-accent)" }}
+                    >
+                      {cmd.icon}
+                    </span>
+                    {cmd.label}
                   </button>
                 ))}
               </div>
@@ -803,7 +1073,7 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
               {note.linkedNoteIds?.length > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-[12px]" style={{ color: "var(--nous-secondary)" }}>Links</span>
-                  <span className="text-[12px] font-medium" style={{ color: "#2d8b8b" }}>
+                  <span className="text-[12px] font-medium" style={{ color: "var(--nous-accent)" }}>
                     {note.linkedNoteIds.length}
                   </span>
                 </div>
@@ -838,9 +1108,9 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
                   <button
                     onClick={() => setShowDraw(true)}
                     className="text-[12px] font-medium transition-colors"
-                    style={{ color: "#2d8b8b" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = "#45abab")}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = "#2d8b8b")}
+                    style={{ color: "var(--nous-accent)" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "var(--nous-accent2)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "var(--nous-accent)")}
                   >
                     Edit
                   </button>
@@ -894,15 +1164,15 @@ export const NoteEditor = ({ className = "" }: NoteEditorProps) => {
                       color: "#c8c8d8",
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "rgba(45,139,139,0.06)";
-                      e.currentTarget.style.borderColor = "rgba(45,139,139,0.15)";
+                      e.currentTarget.style.background = "rgba(var(--nous-accent-rgb),0.06)";
+                      e.currentTarget.style.borderColor = "rgba(var(--nous-accent-rgb),0.15)";
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = "rgba(255,255,255,0.02)";
                       e.currentTarget.style.borderColor = "rgba(255,255,255,0.04)";
                     }}
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2d8b8b" strokeWidth="1.5">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--nous-accent)" strokeWidth="1.5">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                       <polyline points="14 2 14 8 20 8" />
                     </svg>

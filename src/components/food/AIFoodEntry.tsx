@@ -57,7 +57,7 @@ export const AIFoodEntry = ({ onResult, geminiApiKey }: AIFoodEntryProps) => {
           height="18"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#2d8b8b"
+          stroke="var(--nous-accent)"
           strokeWidth="1.8"
           strokeLinecap="round"
           strokeLinejoin="round"

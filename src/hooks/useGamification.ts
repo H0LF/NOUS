@@ -114,7 +114,8 @@ export function useGamification(): GamificationData {
   // when the user changes a toggle.
   const lastFeatures = useRef(features);
   // Track previously earned badge IDs so we can toast newly unlocked ones.
-  const prevEarnedIds = useRef<Set<string>>(new Set());
+  // null = first load (don't toast), Set = subsequent loads (toast new ones).
+  const prevEarnedIds = useRef<Set<string> | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -327,18 +328,19 @@ export function useGamification(): GamificationData {
 
       lastFetchedAt.current = Date.now();
 
-      // Fire achievement toasts for newly earned badges
-      badges.forEach((badge) => {
-        if (badge.earned && !prevEarnedIds.current.has(badge.id)) {
-          toast.success(`Achievement unlocked: ${badge.label}`, {
-            duration: 4000,
-            icon: "🏆",
-          });
-        }
-      });
-      prevEarnedIds.current = new Set(
-        badges.filter((b) => b.earned).map((b) => b.id),
-      );
+      const earnedNow = new Set(badges.filter((b) => b.earned).map((b) => b.id));
+      // Only toast on subsequent loads — skip on first mount so all earned
+      // badges don't fire on every page visit.
+      if (prevEarnedIds.current !== null) {
+        badges.forEach((badge) => {
+          if (badge.earned && !prevEarnedIds.current!.has(badge.id)) {
+            toast.success(`Achievement unlocked: ${badge.label}`, {
+              duration: 4000,
+            });
+          }
+        });
+      }
+      prevEarnedIds.current = earnedNow;
 
       setData({
         xp,

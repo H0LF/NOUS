@@ -234,8 +234,8 @@ export const WorkoutHistory = () => {
                     onClick={() => handleSaveSession(session.id)}
                     className="w-full py-2 rounded-lg text-xs font-bold transition-all"
                     style={{
-                      background: "rgba(45,139,139,0.15)",
-                      border: "1px solid rgba(45,139,139,0.3)",
+                      background: "rgba(var(--nous-accent-rgb),0.15)",
+                      border: "1px solid rgba(var(--nous-accent-rgb),0.3)",
                       color: "var(--nous-accent)",
                     }}
                   >
@@ -261,8 +261,8 @@ export const WorkoutHistory = () => {
           disabled={loadingMore}
           className="w-full py-3 rounded-xl text-sm font-medium transition-all"
           style={{
-            background: "rgba(45,139,139,0.06)",
-            border: "1px solid rgba(45,139,139,0.15)",
+            background: "rgba(var(--nous-accent-rgb),0.06)",
+            border: "1px solid rgba(var(--nous-accent-rgb),0.15)",
             color: "var(--nous-accent)",
           }}
         >

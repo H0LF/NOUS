@@ -20,8 +20,8 @@ export const EventBlock = ({ event, onClick, onDoubleClick }: EventBlockProps) =
     <div
       className="rounded-[10px] p-2 cursor-pointer transition-all duration-150 hover:brightness-110 active:scale-[0.97] select-none"
       style={{
-        backgroundColor: event.color || '#2d8b8b',
-        boxShadow: `0 2px 8px ${event.color || '#2d8b8b'}40`,
+        backgroundColor: event.color || 'var(--nous-accent)',
+        boxShadow: event.color ? `0 2px 8px ${event.color}40` : '0 2px 8px rgba(var(--nous-accent-rgb),0.25)',
       }}
       onClick={onClick}
       onDoubleClick={(e) => {

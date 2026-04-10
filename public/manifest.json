@@ -2,20 +2,42 @@
   "name": "NOUS - Productivity Reimagined",
   "short_name": "NOUS",
   "description": "AI-Powered Productivity App for Calendar, Notes, Gym, and Food tracking.",
-  "start_url": "/",
+  "start_url": "/app/calendar",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0D0D0D",
-  "theme_color": "#0D0D0D",
+  "orientation": "any",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "categories": ["productivity", "health", "fitness", "education"],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Calendar",
+      "url": "/app/calendar",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Notes",
+      "url": "/app/notes",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Gym",
+      "url": "/app/gym",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

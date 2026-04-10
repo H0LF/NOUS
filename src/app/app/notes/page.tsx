@@ -143,35 +143,10 @@ export default function NotesPage() {
           <FileExplorer className="h-full" />
         </div>
 
-        {/* Editor */}
-        <div className="flex-1 min-w-0">
-          <NoteEditor className="h-full" />
-        </div>
-
-        {/* Neural Graph (toggleable, resizable) */}
-        {showGraph && (
-          <div
-            className="shrink-0 flex flex-col relative"
-            style={{
-              width: graphWidth,
-              borderLeft: "1px solid var(--nous-border)",
-            }}
-          >
-            {/* Drag-to-resize handle */}
-            <div
-              onMouseDown={handleResizeStart}
-              className="absolute left-0 top-0 bottom-0 w-1 z-20"
-              style={{ cursor: "col-resize" }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background =
-                  "rgba(232,160,32,0.3)";
-              }}
-              onMouseLeave={(e) => {
-                if (!isResizingRef.current)
-                  (e.currentTarget as HTMLElement).style.background =
-                    "transparent";
-              }}
-            />
+        {/* Full-screen graph when no note selected, editor otherwise */}
+        {!openNoteId ? (
+          /* ── Graph full-screen landing ── */
+          <div className="flex-1 min-w-0 flex flex-col relative">
             <div
               className="flex items-center justify-between px-4 py-3 shrink-0"
               style={{ borderBottom: "1px solid var(--nous-border)" }}
@@ -179,16 +154,9 @@ export default function NotesPage() {
               <div className="flex items-center gap-2">
                 <div
                   className="w-5 h-5 rounded-md flex items-center justify-center"
-                  style={{ background: "rgba(232,160,32,0.1)" }}
+                  style={{ background: "rgba(var(--nous-accent-rgb),0.1)" }}
                 >
-                  <svg
-                    width="10"
-                    height="10"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="var(--nous-accent)"
-                    strokeWidth="2.5"
-                  >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--nous-accent)" strokeWidth="2.5">
                     <circle cx="18" cy="5" r="2.5" />
                     <circle cx="6" cy="12" r="2.5" />
                     <circle cx="18" cy="19" r="2.5" />
@@ -196,41 +164,17 @@ export default function NotesPage() {
                     <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                   </svg>
                 </div>
-                <span
-                  className="text-[12px] font-semibold"
-                  style={{ color: "var(--nous-secondary)", fontFamily: "var(--font-syne)" }}
-                >
-                  Graph
+                <span className="text-[12px] font-semibold" style={{ color: "var(--nous-secondary)" }}>
+                  Graph View
+                </span>
+                <span className="text-[11px]" style={{ color: "var(--nous-tertiary)" }}>
+                  — click a node to open a note
                 </span>
               </div>
-              <button
-                onClick={() => setShowGraph(false)}
-                className="w-6 h-6 flex items-center justify-center rounded-md transition-all duration-150"
-                style={{ color: "var(--nous-secondary)" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "var(--nous-primary)";
-                  e.currentTarget.style.background = "var(--nous-card)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "var(--nous-secondary)";
-                  e.currentTarget.style.background = "transparent";
-                }}
-                title="Hide graph"
-              >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
+              <span className="text-[11px]" style={{ color: "var(--nous-tertiary)" }}>
+                {allNotes.length} note{allNotes.length !== 1 ? "s" : ""}
+              </span>
             </div>
-
             <div className="flex-1 min-h-0 overflow-hidden">
               <NeuralGraph
                 notes={allNotes}
@@ -239,54 +183,133 @@ export default function NotesPage() {
                 onNodeClick={handleGraphNodeClick}
               />
             </div>
-
-            <div
-              className="px-4 py-2.5 shrink-0 flex items-center justify-center"
-              style={{ borderTop: "1px solid var(--nous-border)" }}
-            >
-              <p className="text-[10px]" style={{ color: "var(--nous-tertiary)", fontFamily: "var(--font-space-mono)" }}>
-                {allNotes.length} page
-                {allNotes.length !== 1 ? "s" : ""} connected
-              </p>
-            </div>
           </div>
-        )}
+        ) : (
+          /* ── Editor + optional side graph ── */
+          <>
+            <div className="flex-1 min-w-0">
+              <NoteEditor className="h-full" />
+            </div>
 
-        {/* Show-graph button when panel is hidden */}
-        {!showGraph && (
-          <button
-            onClick={() => setShowGraph(true)}
-            className="w-10 shrink-0 flex flex-col items-center justify-center gap-2 transition-all duration-200"
-            style={{
-              background: "var(--nous-bg)",
-              borderLeft: "1px solid var(--nous-border)",
-              color: "var(--nous-secondary)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = "var(--nous-accent)";
-              e.currentTarget.style.background = "rgba(232,160,32,0.04)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = "var(--nous-secondary)";
-              e.currentTarget.style.background = "var(--nous-bg)";
-            }}
-            title="Show graph"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <circle cx="18" cy="5" r="3" />
-              <circle cx="6" cy="12" r="3" />
-              <circle cx="18" cy="19" r="3" />
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-            </svg>
-          </button>
+            {/* Neural Graph (toggleable, resizable) */}
+            {showGraph && (
+              <div
+                className="shrink-0 flex flex-col relative"
+                style={{
+                  width: graphWidth,
+                  borderLeft: "1px solid var(--nous-border)",
+                }}
+              >
+                {/* Drag-to-resize handle */}
+                <div
+                  onMouseDown={handleResizeStart}
+                  className="absolute left-0 top-0 bottom-0 w-1 z-20"
+                  style={{ cursor: "col-resize" }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background =
+                      "rgba(var(--nous-accent-rgb),0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isResizingRef.current)
+                      (e.currentTarget as HTMLElement).style.background =
+                        "transparent";
+                  }}
+                />
+                <div
+                  className="flex items-center justify-between px-4 py-3 shrink-0"
+                  style={{ borderBottom: "1px solid var(--nous-border)" }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-5 h-5 rounded-md flex items-center justify-center"
+                      style={{ background: "rgba(var(--nous-accent-rgb),0.1)" }}
+                    >
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--nous-accent)" strokeWidth="2.5">
+                        <circle cx="18" cy="5" r="2.5" />
+                        <circle cx="6" cy="12" r="2.5" />
+                        <circle cx="18" cy="19" r="2.5" />
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                      </svg>
+                    </div>
+                    <span
+                      className="text-[12px] font-semibold"
+                      style={{ color: "var(--nous-secondary)", fontFamily: "var(--font-syne)" }}
+                    >
+                      Graph
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setShowGraph(false)}
+                    className="w-6 h-6 flex items-center justify-center rounded-md transition-all duration-150"
+                    style={{ color: "var(--nous-secondary)" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "var(--nous-primary)";
+                      e.currentTarget.style.background = "var(--nous-card)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "var(--nous-secondary)";
+                      e.currentTarget.style.background = "transparent";
+                    }}
+                    title="Hide graph"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  <NeuralGraph
+                    notes={allNotes}
+                    folders={allFolders}
+                    activeNoteId={openNoteId}
+                    onNodeClick={handleGraphNodeClick}
+                  />
+                </div>
+
+                <div
+                  className="px-4 py-2.5 shrink-0 flex items-center justify-center"
+                  style={{ borderTop: "1px solid var(--nous-border)" }}
+                >
+                  <p className="text-[10px]" style={{ color: "var(--nous-tertiary)", fontFamily: "var(--font-space-mono)" }}>
+                    {allNotes.length} page{allNotes.length !== 1 ? "s" : ""} connected
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Show-graph button when panel is hidden */}
+            {!showGraph && (
+              <button
+                onClick={() => setShowGraph(true)}
+                className="w-10 shrink-0 flex flex-col items-center justify-center gap-2 transition-all duration-200"
+                style={{
+                  background: "var(--nous-bg)",
+                  borderLeft: "1px solid var(--nous-border)",
+                  color: "var(--nous-secondary)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "var(--nous-accent)";
+                  e.currentTarget.style.background = "rgba(var(--nous-accent-rgb),0.04)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "var(--nous-secondary)";
+                  e.currentTarget.style.background = "var(--nous-bg)";
+                }}
+                title="Show graph"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+              </button>
+            )}
+          </>
         )}
       </div>
 

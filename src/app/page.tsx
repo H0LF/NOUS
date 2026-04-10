@@ -12,10 +12,26 @@ export default function LoginPage() {
     if (user) router.push("/app/calendar");
   }, [user, router]);
 
+  // Keep body background in sync so there's no white gap behind the page div
+  React.useEffect(() => {
+    const prev = document.body.style.background;
+    document.body.style.background = '#111417';
+    return () => { document.body.style.background = prev; };
+  }, []);
+
   return (
     <div
-      className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden"
-      style={{ background: '#111417' }}
+      style={{
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        background: '#111417',
+        minHeight: '100vh',
+        width: '100%',
+      }}
     >
       {/* Subtle top divider */}
       <div
@@ -24,7 +40,7 @@ export default function LoginPage() {
       />
 
       {/* ── Content ── */}
-      <div className="relative z-10 flex flex-col items-center gap-14 px-8 max-w-sm w-full">
+      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '56px', paddingLeft: '32px', paddingRight: '32px', maxWidth: '384px', width: '100%' }}>
 
         {/* Wordmark */}
         <div className="flex flex-col items-center gap-5 animate-fadeUp">
@@ -57,7 +73,7 @@ export default function LoginPage() {
         {/* Feature labels */}
         <div
           className="flex flex-wrap justify-center gap-x-5 gap-y-2 animate-fadeUp"
-          style={{ animationDelay: '120ms', opacity: 0 }}
+          style={{ animationDelay: '120ms' }}
         >
           {['Calendar', 'Notes', 'Gym', 'Nutrition', 'AI'].map((f) => (
             <span
@@ -73,15 +89,15 @@ export default function LoginPage() {
         {/* CTA */}
         <div
           className="flex flex-col items-center gap-4 w-full animate-fadeUp"
-          style={{ animationDelay: '220ms', opacity: 0 }}
+          style={{ animationDelay: '220ms' }}
         >
           <button
             onClick={signInWithGoogle}
             className="w-full flex items-center justify-center gap-3 h-[50px] rounded-xl font-medium text-[14px] transition-all duration-200 active:scale-[0.98] hover:brightness-110"
             style={{
-              background: '#2d8b8b',
+              background: 'var(--nous-accent)',
               color: '#ffffff',
-              boxShadow: '0 2px 20px rgba(45,139,139,0.3)',
+              boxShadow: '0 2px 20px rgba(var(--nous-accent-rgb),0.3)',
               fontFamily: 'var(--font-outfit)',
               letterSpacing: '-0.01em',
             }}

@@ -112,6 +112,7 @@ export interface GamificationFeatures {
 export interface UserSettings {
   geminiApiKey: string;
   theme: "dark" | "light";
+  accentColor?: string;
   dailyCalorieGoal: number;
   dailyProteinGoal: number;
   dailyCarbsGoal: number;

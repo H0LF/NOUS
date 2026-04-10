@@ -149,8 +149,8 @@ export default function FoodPage() {
             onClick={goToToday}
             className="h-8 px-3 rounded-lg text-[11px] font-semibold transition-all"
             style={{
-              background: isSelectedToday ? "rgba(45,139,139,0.1)" : "var(--nous-surface)",
-              border: `1px solid ${isSelectedToday ? "rgba(45,139,139,0.3)" : "var(--nous-border)"}`,
+              background: isSelectedToday ? "rgba(var(--nous-accent-rgb),0.1)" : "var(--nous-surface)",
+              border: `1px solid ${isSelectedToday ? "rgba(var(--nous-accent-rgb),0.3)" : "var(--nous-border)"}`,
               color: isSelectedToday ? "var(--nous-accent)" : "var(--nous-secondary)",
             }}
           >

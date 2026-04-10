@@ -39,6 +39,7 @@ interface GymSlice {
   stopwatchSeconds: number;
   restTimerSeconds: number;
   restTimerDuration: number;
+  restTimerEndsAt: number | null; // epoch ms — used to resync after screen lock
   isRestTimerRunning: boolean;
   setActiveWorkoutType: (type: string | null) => void;
   setExercises: (exercises: ExerciseEntry[]) => void;
@@ -46,6 +47,7 @@ interface GymSlice {
   startRestTimer: (duration: number) => void;
   tickRestTimer: () => void;
   stopRestTimer: () => void;
+  syncRestTimer: () => void; // recalculate from endsAt after page resume
 }
 
 interface FoodSlice {
@@ -136,19 +138,34 @@ export const useStore = create<StoreState>((set) => ({
   stopwatchSeconds: 0,
   restTimerSeconds: 0,
   restTimerDuration: 90,
+  restTimerEndsAt: null,
   isRestTimerRunning: false,
   setActiveWorkoutType: (type) => set({ activeWorkoutType: type }),
   setExercises: (exercises) => set({ exercises }),
   setStopwatchSeconds: (seconds) => set({ stopwatchSeconds: seconds }),
-  startRestTimer: (duration) =>
-    set({ restTimerSeconds: duration, restTimerDuration: duration, isRestTimerRunning: true }),
+  startRestTimer: (duration) => {
+    const endsAt = Date.now() + duration * 1000;
+    set({ restTimerSeconds: duration, restTimerDuration: duration, restTimerEndsAt: endsAt, isRestTimerRunning: true });
+  },
   tickRestTimer: () =>
     set((state) => {
-      const next = state.restTimerSeconds - 1;
-      if (next <= 0) return { restTimerSeconds: 0, isRestTimerRunning: false };
-      return { restTimerSeconds: next };
+      if (!state.restTimerEndsAt) {
+        const next = state.restTimerSeconds - 1;
+        if (next <= 0) return { restTimerSeconds: 0, isRestTimerRunning: false };
+        return { restTimerSeconds: next };
+      }
+      const remaining = Math.round((state.restTimerEndsAt - Date.now()) / 1000);
+      if (remaining <= 0) return { restTimerSeconds: 0, isRestTimerRunning: false, restTimerEndsAt: null };
+      return { restTimerSeconds: remaining };
     }),
-  stopRestTimer: () => set({ restTimerSeconds: 0, isRestTimerRunning: false }),
+  syncRestTimer: () =>
+    set((state) => {
+      if (!state.isRestTimerRunning || !state.restTimerEndsAt) return {};
+      const remaining = Math.round((state.restTimerEndsAt - Date.now()) / 1000);
+      if (remaining <= 0) return { restTimerSeconds: 0, isRestTimerRunning: false, restTimerEndsAt: null };
+      return { restTimerSeconds: remaining };
+    }),
+  stopRestTimer: () => set({ restTimerSeconds: 0, isRestTimerRunning: false, restTimerEndsAt: null }),
 
   // ── Food ──────────────────────────────────────────────────────────────────
   selectedDate: new Date().toISOString().split("T")[0],

@@ -33,6 +33,7 @@ input[type=number]::-webkit-outer-spin-button {
   --nous-border:    rgba(0,0,0,0.08);
   --nous-accent:    #2d8b8b;
   --nous-accent2:   #1d6b6b;
+  --nous-accent-rgb: 45,139,139;
   --nous-primary:   #1a2028;
   --nous-secondary: #708090;
   --nous-tertiary:  #d3d3d3;
@@ -43,12 +44,13 @@ input[type=number]::-webkit-outer-spin-button {
 
 html.dark {
   /* Modern Minimalist dark */
-  --nous-bg:        #111417;
-  --nous-surface:   #181d21;
-  --nous-card:      #1f252b;
+  --nous-bg:        #111111;
+  --nous-surface:   #191919;
+  --nous-card:      #212121;
   --nous-border:    rgba(255,255,255,0.065);
   --nous-accent:    #2d8b8b;
   --nous-accent2:   #45abab;
+  --nous-accent-rgb: 45,139,139;
   --nous-primary:   #dde4ec;
   --nous-secondary: #4a5a6a;
   --nous-tertiary:  #1e2428;
@@ -97,7 +99,7 @@ html.dark ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); 
   border: 1px solid rgba(0, 0, 0, 0.07);
 }
 html.dark .glass {
-  background: rgba(24, 29, 33, 0.9);
+  background: rgba(25, 25, 25, 0.9);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.065);
@@ -129,15 +131,15 @@ html.dark .glass {
   50%       { transform: translateY(-8px); }
 }
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 16px rgba(45,139,139,0.15); }
-  50%       { box-shadow: 0 0 32px rgba(45,139,139,0.35); }
+  0%, 100% { box-shadow: 0 0 16px rgba(var(--nous-accent-rgb),0.15); }
+  50%       { box-shadow: 0 0 32px rgba(var(--nous-accent-rgb),0.35); }
 }
 @keyframes shimmer {
   0%   { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
 
-.animate-fadeUp    { animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards; }
+.animate-fadeUp    { animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both; }
 .animate-fadeIn    { animation: fadeIn 0.35s ease forwards; }
 .animate-slideUp   { animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1) forwards; }
 .animate-float     { animation: float 8s ease-in-out infinite; }
@@ -174,22 +176,28 @@ html.dark .glass {
 }
 
 .obsidian-content h1 {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--nous-primary);
   letter-spacing: -0.02em;
   margin: 2em 0 0.6em;
   line-height: 1.2;
   padding-bottom: 0.4em;
+  padding-left: 14px;
   border-bottom: 1px solid var(--nous-border);
+  border-left: 3px solid var(--nous-accent);
+  border-radius: 0 0 0 2px;
 }
 .obsidian-content h2 {
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 600;
   color: var(--nous-primary);
   letter-spacing: -0.015em;
   margin: 1.6em 0 0.5em;
   line-height: 1.3;
+  padding-left: 12px;
+  border-left: 2.5px solid var(--nous-accent);
+  opacity: 0.9;
 }
 .obsidian-content h3 {
   font-size: 17px;
@@ -198,6 +206,9 @@ html.dark .glass {
   letter-spacing: -0.01em;
   margin: 1.4em 0 0.4em;
   line-height: 1.4;
+  padding-left: 10px;
+  border-left: 2px solid rgba(var(--nous-accent-rgb),0.45);
+  opacity: 0.85;
 }
 
 .obsidian-content p { margin: 0.5em 0; }
@@ -209,7 +220,7 @@ html.dark .glass {
 .obsidian-content a {
   color: var(--nous-accent);
   text-decoration: underline;
-  text-decoration-color: rgba(45,139,139,0.3);
+  text-decoration-color: rgba(var(--nous-accent-rgb),0.3);
   text-underline-offset: 3px;
   transition: text-decoration-color 0.15s;
 }
@@ -223,8 +234,8 @@ html.dark .glass {
 .obsidian-content code {
   font-family: var(--font-ibm-plex-mono), 'Courier New', monospace;
   font-size: 0.85em;
-  background: rgba(45,139,139,0.07);
-  border: 1px solid rgba(45,139,139,0.15);
+  background: rgba(var(--nous-accent-rgb),0.07);
+  border: 1px solid rgba(var(--nous-accent-rgb),0.15);
   border-radius: 4px;
   padding: 2px 7px;
   color: var(--nous-accent);
@@ -253,7 +264,7 @@ html.dark .glass {
   margin: 1.2em 0;
   color: var(--nous-secondary);
   font-style: italic;
-  background: rgba(45,139,139,0.04);
+  background: rgba(var(--nous-accent-rgb),0.04);
   border-radius: 0 8px 8px 0;
 }
 
@@ -266,14 +277,53 @@ html.dark .glass {
 
 .obsidian-content .wiki-link {
   color: var(--nous-accent);
-  background: rgba(45,139,139,0.08);
+  background: rgba(var(--nous-accent-rgb),0.08);
   border-radius: 4px;
   padding: 1px 5px;
   cursor: pointer;
   transition: background 0.15s;
 }
-.obsidian-content .wiki-link:hover { background: rgba(45,139,139,0.15); }
+.obsidian-content .wiki-link:hover { background: rgba(var(--nous-accent-rgb),0.15); }
 
+/* ─── Enhanced code block wrapper ─── */
+.note-code-wrapper {
+  position: relative;
+  margin: 16px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--nous-border);
+  border-left: 2px solid var(--nous-accent2);
+  background: var(--nous-card);
+}
+.note-code-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--nous-border);
+  background: rgba(0,0,0,0.15);
+  user-select: none;
+}
+.note-code-lang {
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--nous-accent);
+}
+.note-code-copy {
+  font-size: 10px;
+  font-family: var(--font-outfit), sans-serif;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--nous-border);
+  background: transparent;
+  color: var(--nous-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.note-code-copy:hover { background: rgba(var(--nous-accent-rgb),0.1); color: var(--nous-accent); }
 /* ─── Code block inserted by toolbar ─── */
 .note-code-block {
   display: block;
@@ -281,22 +331,24 @@ html.dark .glass {
   font-size: 13px;
   line-height: 1.7;
   color: var(--nous-primary);
-  background: var(--nous-card);
-  border: 1px solid var(--nous-border);
-  border-left: 2px solid var(--nous-accent2);
-  border-radius: 8px;
-  padding: 16px 20px;
-  margin: 16px 0;
+  background: transparent;
+  padding: 14px 18px;
+  margin: 0;
   white-space: pre-wrap;
   word-break: break-all;
   outline: none;
   tab-size: 2;
 }
 .note-code-block:focus {
-  border-color: rgba(90,138,128,0.35);
-  background: rgba(90,138,128,0.04);
-  box-shadow: 0 0 0 3px rgba(90,138,128,0.06);
+  background: rgba(var(--nous-accent-rgb),0.03);
 }
+/* syntax token colors */
+.tok-kw   { color: #60a5fa; }
+.tok-str  { color: #86efac; }
+.tok-num  { color: #fbbf24; }
+.tok-cmt  { color: var(--nous-secondary); font-style: italic; }
+.tok-fn   { color: #c084fc; }
+.tok-op   { color: #f87171; }
 
 /* ─── Placeholder for contentEditable ─── */
 [data-placeholder]:empty::before {

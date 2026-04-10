@@ -3,7 +3,8 @@ import { callGeminiJSON } from "@/lib/gemini";
 
 export async function POST(req: NextRequest) {
   try {
-    const { description, geminiApiKey } = await req.json();
+    const { description, geminiApiKey: userKey } = await req.json();
+    const geminiApiKey = userKey || process.env.GEMINI_API_KEY;
 
     if (!description || !geminiApiKey) {
       return NextResponse.json(

@@ -76,7 +76,7 @@ export const Navbar = () => {
               href={href}
               className="relative flex flex-col items-center justify-center gap-1 px-4 py-2.5 rounded-[20px] transition-all duration-200 min-w-[58px]"
               style={{
-                background: active ? 'rgba(45,139,139,0.1)' : 'transparent',
+                background: active ? 'rgba(var(--nous-accent-rgb),0.1)' : 'transparent',
               }}
             >
               <span

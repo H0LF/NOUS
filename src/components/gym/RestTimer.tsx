@@ -1,24 +1,90 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useStore } from "@/store";
 
 const PRESETS = [60, 90, 120, 180];
+
+async function requestNotificationPermission() {
+  if (typeof window === "undefined" || !("Notification" in window)) return;
+  if (Notification.permission === "default") {
+    await Notification.requestPermission();
+  }
+}
+
+function fireRestNotification() {
+  if (typeof window === "undefined" || !("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+  const n = new Notification("Rest time is over!", {
+    body: "Time to get back to work",
+    icon: "/icons/icon-192x192.png",
+    tag: "rest-timer",
+    requireInteraction: false,
+  });
+  // Auto-close after 4 seconds
+  setTimeout(() => n.close(), 4000);
+}
+
+function scheduleRestTimerSW(endsAt: number) {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.ready.then((reg) => {
+    reg.active?.postMessage({ type: "SCHEDULE_REST_TIMER", endsAt });
+  });
+}
+
+function cancelRestTimerSW() {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.ready.then((reg) => {
+    reg.active?.postMessage({ type: "CANCEL_REST_TIMER" });
+  });
+}
 
 export const RestTimer = () => {
   const {
     restTimerSeconds,
     restTimerDuration,
+    restTimerEndsAt,
     isRestTimerRunning,
     startRestTimer,
     tickRestTimer,
     stopRestTimer,
+    syncRestTimer,
   } = useStore();
+
+  const prevRunning = useRef(false);
 
   useEffect(() => {
     if (!isRestTimerRunning) return;
     const id = setInterval(tickRestTimer, 1000);
     return () => clearInterval(id);
   }, [isRestTimerRunning, tickRestTimer]);
+
+  // Resync timer when the page becomes visible again (after screen lock/tab switch)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") syncRestTimer();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [syncRestTimer]);
+
+  // Request permission + schedule SW notification when timer starts
+  useEffect(() => {
+    if (isRestTimerRunning && !prevRunning.current) {
+      requestNotificationPermission();
+      if (restTimerEndsAt) scheduleRestTimerSW(restTimerEndsAt);
+    }
+    if (!isRestTimerRunning && prevRunning.current) {
+      cancelRestTimerSW();
+    }
+    prevRunning.current = isRestTimerRunning;
+  }, [isRestTimerRunning, restTimerEndsAt]);
+
+  // Fire in-page notification when timer reaches 0 (app is open)
+  useEffect(() => {
+    if (isRestTimerRunning && restTimerSeconds === 0) {
+      fireRestNotification();
+    }
+  }, [restTimerSeconds, isRestTimerRunning]);
 
   const progress = restTimerDuration > 0
     ? restTimerSeconds / restTimerDuration

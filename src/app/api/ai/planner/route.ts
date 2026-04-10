@@ -4,7 +4,8 @@ import { callGeminiJSON } from "@/lib/gemini";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId, goal, weeklyEvents, geminiApiKey, pdfBase64, pdfName } = body;
+    const { userId, goal, weeklyEvents, geminiApiKey: userKey, pdfBase64, pdfName } = body;
+    const geminiApiKey = userKey || process.env.GEMINI_API_KEY;
 
     if (!userId || !geminiApiKey) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });

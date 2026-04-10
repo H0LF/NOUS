@@ -1,8 +1,56 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useGamification, Badge, RadarAxis } from "@/hooks/useGamification";
 import { useSettings } from "@/hooks/useSettings";
 import { Toggle } from "@/components/ui/Toggle";
+
+// ── Daily challenges ─────────────────────────────────────────────────────────���─
+const ALL_CHALLENGES = [
+  { id: "log_meal",     label: "Log a meal today",            xp: 10, icon: "" },
+  { id: "log_water",    label: "Log your water intake",       xp: 5,  icon: "" },
+  { id: "workout",      label: "Complete a workout",          xp: 50, icon: "" },
+  { id: "note",         label: "Write or update a note",      xp: 15, icon: "" },
+  { id: "review_cal",   label: "Check your calendar",         xp: 5,  icon: "" },
+  { id: "stretch",      label: "Do a 10-min stretch",         xp: 10, icon: "" },
+  { id: "steps",        label: "Hit 8 000 steps",             xp: 20, icon: "" },
+  { id: "sleep",        label: "Log 8h of sleep",             xp: 15, icon: "" },
+  { id: "meal_prep",    label: "Prep meals for tomorrow",     xp: 20, icon: "" },
+  { id: "no_sugar",     label: "Go sugar-free today",         xp: 25, icon: "" },
+];
+
+function getDailyChallenges(date: string): typeof ALL_CHALLENGES {
+  // Deterministic seeding from date string so same day = same challenges
+  let seed = date.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const picked: typeof ALL_CHALLENGES = [];
+  const pool = [...ALL_CHALLENGES];
+  while (picked.length < 3 && pool.length > 0) {
+    seed = (seed * 1664525 + 1013904223) & 0x7fffffff;
+    const idx = seed % pool.length;
+    picked.push(pool.splice(idx, 1)[0]);
+  }
+  return picked;
+}
+
+function useDailyChallenges() {
+  const today = new Date().toISOString().slice(0, 10);
+  const storageKey = `nous_challenges_${today}`;
+  const [completed, setCompleted] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try { return new Set(JSON.parse(localStorage.getItem(storageKey) ?? "[]")); } catch { return new Set(); }
+  });
+  const challenges = getDailyChallenges(today);
+
+  const toggle = (id: string) => {
+    setCompleted((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      if (typeof window !== "undefined") localStorage.setItem(storageKey, JSON.stringify([...next]));
+      return next;
+    });
+  };
+
+  return { challenges, completed, toggle };
+}
 
 // ── Radar (spider) chart ──────────────────────────────────────────────────────
 const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
@@ -41,12 +89,12 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
     <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ overflow: "visible" }}>
       <defs>
         <linearGradient id="radarFill" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#2d8b8b" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#45abab" stopOpacity="0.2" />
+          <stop offset="0%" stopColor="var(--nous-accent)" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="var(--nous-accent)" stopOpacity="0.2" />
         </linearGradient>
         <linearGradient id="radarStroke" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#2d8b8b" />
-          <stop offset="100%" stopColor="#45abab" />
+          <stop offset="0%" stopColor="var(--nous-accent)" />
+          <stop offset="100%" stopColor="var(--nous-accent)" />
         </linearGradient>
         <filter id="radarGlow">
           <feGaussianBlur stdDeviation="3" result="blur" />
@@ -62,7 +110,7 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
           key={ri}
           d={ringPath(ratio)}
           fill="none"
-          stroke={ratio === 1 ? "rgba(45,139,139,0.25)" : "var(--nous-border)"}
+          stroke={ratio === 1 ? "rgba(var(--nous-accent-rgb),0.25)" : "var(--nous-border)"}
           strokeWidth={ratio === 1 ? 1 : 0.8}
         />
       ))}
@@ -93,7 +141,7 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
             cx={x.toFixed(2)}
             cy={y.toFixed(2)}
             r="3.5"
-            fill="#2d8b8b"
+            fill="var(--nous-accent)"
             stroke="var(--nous-bg)"
             strokeWidth="1.5"
             filter="url(#radarGlow)"
@@ -125,7 +173,7 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
               y={(y + dy + 11).toFixed(2)}
               textAnchor={textAnchor}
               fontSize="8"
-              fill="#2d8b8b"
+              fill="var(--nous-accent)"
               fontFamily="var(--font-outfit), sans-serif"
               fontWeight="700"
             >
@@ -135,14 +183,14 @@ const RadarChart = ({ axes }: { axes: RadarAxis[] }) => {
         );
       })}
 
-      <circle cx={cx} cy={cy} r="4" fill="#2d8b8b" opacity="0.5" filter="url(#radarGlow)" />
+      <circle cx={cx} cy={cy} r="4" fill="var(--nous-accent)" opacity="0.5" filter="url(#radarGlow)" />
     </svg>
   );
 };
 
 // ── Badge icon ────────────────────────────────────────────────────────────────
 const BadgeIcon = ({ type, earned }: { type: Badge["icon"]; earned: boolean }) => {
-  const color = earned ? "#2d8b8b" : "var(--nous-tertiary)";
+  const color = earned ? "var(--nous-accent)" : "var(--nous-tertiary)";
   const icons: Record<Badge["icon"], React.ReactNode> = {
     food: (
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -188,6 +236,17 @@ export const GamificationPanel = () => {
   const g = useGamification();
   const { settings, updateSettings } = useSettings();
   const [showConfig, setShowConfig] = useState(false);
+  const { challenges, completed, toggle } = useDailyChallenges();
+  const prevLevel = useRef(g.level);
+  const [levelUpFlash, setLevelUpFlash] = useState(false);
+
+  useEffect(() => {
+    if (!g.loading && g.level > prevLevel.current) {
+      setLevelUpFlash(true);
+      setTimeout(() => setLevelUpFlash(false), 2000);
+    }
+    prevLevel.current = g.level;
+  }, [g.level, g.loading]);
 
   const gamEnabled = settings.gamificationEnabled ?? true;
   const gamFeatures = settings.gamificationFeatures ?? { food: true, gym: true, calendar: true, notes: true };
@@ -196,7 +255,7 @@ export const GamificationPanel = () => {
   const MasterToggle = () => (
     <div
       className="rounded-2xl px-5 py-4 flex items-center justify-between"
-      style={{ background: "rgba(45,139,139,0.05)", border: "1px solid rgba(45,139,139,0.12)" }}
+      style={{ background: "rgba(var(--nous-accent-rgb),0.05)", border: "1px solid rgba(var(--nous-accent-rgb),0.12)" }}
     >
       <div>
         <p className="text-sm font-semibold" style={{ color: "var(--nous-primary)" }}>
@@ -230,7 +289,7 @@ export const GamificationPanel = () => {
         <MasterToggle />
         <div
           className="rounded-2xl p-6 animate-pulse"
-          style={{ background: "rgba(45,139,139,0.05)", border: "1px solid rgba(45,139,139,0.1)" }}
+          style={{ background: "rgba(var(--nous-accent-rgb),0.05)", border: "1px solid rgba(var(--nous-accent-rgb),0.1)" }}
         >
           <div className="h-4 rounded-full w-1/3 mb-4" style={{ background: "var(--nous-border)" }} />
           <div className="h-48 rounded-xl" style={{ background: "var(--nous-surface)" }} />
@@ -250,8 +309,8 @@ export const GamificationPanel = () => {
       <div
         className="rounded-2xl p-5 space-y-3"
         style={{
-          background: "linear-gradient(135deg, rgba(45,139,139,0.1) 0%, rgba(69,171,171,0.05) 100%)",
-          border: "1px solid rgba(45,139,139,0.18)",
+          background: "linear-gradient(135deg, rgba(var(--nous-accent-rgb),0.1) 0%, rgba(var(--nous-accent-rgb),0.05) 100%)",
+          border: "1px solid rgba(var(--nous-accent-rgb),0.18)",
         }}
       >
         <div className="flex items-end justify-between">
@@ -278,14 +337,19 @@ export const GamificationPanel = () => {
           </div>
           <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--nous-border)" }}>
             <div
-              className="h-full rounded-full transition-all duration-700"
+              className={`h-full rounded-full transition-all duration-700 ${levelUpFlash ? "animate-pulseGlow" : ""}`}
               style={{
                 width: `${g.progressPercent}%`,
-                background: "linear-gradient(90deg, #2d8b8b, #45abab)",
-                boxShadow: "0 0 10px rgba(45,139,139,0.4)",
+                background: "linear-gradient(90deg, var(--nous-accent), var(--nous-accent2))",
+                boxShadow: levelUpFlash ? "0 0 20px rgba(var(--nous-accent-rgb),0.8)" : "0 0 10px rgba(var(--nous-accent-rgb),0.4)",
               }}
             />
           </div>
+          {levelUpFlash && (
+            <p className="text-[11px] text-center font-bold animate-fadeIn" style={{ color: "var(--nous-accent)" }}>
+              Level Up!
+            </p>
+          )}
           <p className="text-[10px] mt-1 text-right" style={{ color: "var(--nous-secondary)" }}>
             {Math.max(0, g.xpForNextLevel - g.xp)} XP to Level {g.level + 1}
           </p>
@@ -339,7 +403,99 @@ export const GamificationPanel = () => {
               <div className="h-1 rounded-full overflow-hidden" style={{ background: "var(--nous-border)" }}>
                 <div
                   className="h-full rounded-full"
-                  style={{ width: `${axis.value}%`, background: "linear-gradient(90deg, #2d8b8b, #45abab)" }}
+                  style={{ width: `${axis.value}%`, background: "linear-gradient(90deg, var(--nous-accent), var(--nous-accent2))" }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Daily challenges ── */}
+      <div
+        className="rounded-2xl p-4 space-y-3"
+        style={{ background: "var(--nous-surface)", border: "1px solid var(--nous-border)" }}
+      >
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--nous-secondary)" }}>
+            Daily Challenges
+          </p>
+          <span className="text-[10px]" style={{ color: "var(--nous-accent)" }}>
+            {completed.size}/3 done
+          </span>
+        </div>
+        <div className="space-y-2">
+          {challenges.map((ch) => {
+            const done = completed.has(ch.id);
+            return (
+              <button
+                key={ch.id}
+                onClick={() => toggle(ch.id)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150"
+                style={{
+                  background: done ? "rgba(var(--nous-accent-rgb),0.08)" : "var(--nous-card)",
+                  border: `1px solid ${done ? "rgba(var(--nous-accent-rgb),0.25)" : "var(--nous-border)"}`,
+                }}
+              >
+                <span className="text-base shrink-0">{ch.icon}</span>
+                <span className="flex-1 text-[12px]" style={{ color: done ? "var(--nous-accent)" : "var(--nous-primary)", textDecoration: done ? "line-through" : "none", opacity: done ? 0.7 : 1 }}>
+                  {ch.label}
+                </span>
+                <span className="text-[10px] font-bold shrink-0" style={{ color: "var(--nous-accent)" }}>
+                  +{ch.xp} XP
+                </span>
+                <div
+                  className="w-4 h-4 rounded-full shrink-0 flex items-center justify-center"
+                  style={{ background: done ? "var(--nous-accent)" : "transparent", border: `1.5px solid ${done ? "var(--nous-accent)" : "var(--nous-border)"}` }}
+                >
+                  {done && (
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        {completed.size === 3 && (
+          <div className="text-center py-1 text-[11px] font-semibold animate-fadeIn" style={{ color: "var(--nous-accent)" }}>
+            All challenges complete! Come back tomorrow.
+          </div>
+        )}
+      </div>
+
+      {/* ── Weekly recap ── */}
+      <div
+        className="rounded-2xl p-4 space-y-3"
+        style={{ background: "var(--nous-surface)", border: "1px solid var(--nous-border)" }}
+      >
+        <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--nous-secondary)" }}>
+          This week
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { label: "Meals logged", value: g.loggedFoodDays, max: 7, icon: "" },
+            { label: "Workouts", value: g.totalWorkouts, max: 5, icon: "" },
+            { label: "Classes", value: g.totalClassesLogged, max: 10, icon: "" },
+            { label: "XP this week", value: g.xp, max: 500, icon: "" },
+          ].map(({ label, value, max, icon }) => (
+            <div
+              key={label}
+              className="rounded-xl p-3 space-y-2"
+              style={{ background: "var(--nous-card)", border: "1px solid var(--nous-border)" }}
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm">{icon}</span>
+                <span className="text-[10px]" style={{ color: "var(--nous-secondary)" }}>{label}</span>
+              </div>
+              <p className="text-xl font-bold leading-none" style={{ color: "var(--nous-primary)" }}>
+                {typeof value === "number" && value > 1000 ? `${(value / 1000).toFixed(1)}k` : value}
+              </p>
+              <div className="h-1 rounded-full overflow-hidden" style={{ background: "var(--nous-border)" }}>
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${Math.min(100, Math.round((value / max) * 100))}%`, background: "linear-gradient(90deg, var(--nous-accent), var(--nous-accent2))" }}
                 />
               </div>
             </div>
@@ -363,8 +519,8 @@ export const GamificationPanel = () => {
                 title={badge.description}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-medium"
                 style={{
-                  background: "rgba(45,139,139,0.12)",
-                  border: "1px solid rgba(45,139,139,0.25)",
+                  background: "rgba(var(--nous-accent-rgb),0.12)",
+                  border: "1px solid rgba(var(--nous-accent-rgb),0.25)",
                   color: "var(--nous-accent)",
                 }}
               >

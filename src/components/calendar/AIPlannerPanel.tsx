@@ -91,8 +91,8 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
           style={{ borderBottom: '1px solid var(--nous-border)' }}>
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-              style={{ background: 'rgba(45,139,139,0.12)', border: '1px solid rgba(45,139,139,0.2)' }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="#2d8b8b">
+              style={{ background: 'rgba(var(--nous-accent-rgb),0.12)', border: '1px solid rgba(var(--nous-accent-rgb),0.2)' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="var(--nous-accent)">
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
               </svg>
             </div>
@@ -123,17 +123,17 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
 
           {pdf ? (
             <div className="flex items-center gap-3 p-3 rounded-xl mb-4"
-              style={{ background: 'rgba(45,139,139,0.06)', border: '1px solid rgba(45,139,139,0.15)' }}>
+              style={{ background: 'rgba(var(--nous-accent-rgb),0.06)', border: '1px solid rgba(var(--nous-accent-rgb),0.15)' }}>
               <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                style={{ background: 'rgba(45,139,139,0.12)' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2d8b8b" strokeWidth="2">
+                style={{ background: 'rgba(var(--nous-accent-rgb),0.12)' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--nous-accent)" strokeWidth="2">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[12px] font-medium truncate" style={{ color: 'var(--nous-primary)' }}>{pdf.name}</p>
-                <p className="text-[10px]" style={{ color: '#2d8b8b' }}>Ready to analyse</p>
+                <p className="text-[10px]" style={{ color: 'var(--nous-accent)' }}>Ready to analyse</p>
               </div>
               <button onClick={() => { setPdf(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
                 className="w-5 h-5 flex items-center justify-center rounded-full transition-colors shrink-0"
@@ -149,7 +149,7 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
             <button onClick={() => fileInputRef.current?.click()}
               className="w-full flex items-center gap-3 p-3 rounded-xl mb-4 transition-colors"
               style={{ background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.07)' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(45,139,139,0.3)'; (e.currentTarget as HTMLElement).style.background = 'rgba(45,139,139,0.04)'; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(var(--nous-accent-rgb),0.3)'; (e.currentTarget as HTMLElement).style.background = 'rgba(var(--nous-accent-rgb),0.04)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.02)'; }}>
               <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                 style={{ background: 'rgba(255,255,255,0.03)' }}>
@@ -178,9 +178,9 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
             {["Exam on Friday", "Project due next week", "Revise chapters 1–5"].map(ex => (
               <button key={ex} onClick={() => setGoal(ex)}
                 className="px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors"
-                style={{ background: 'rgba(45,139,139,0.06)', border: '1px solid rgba(45,139,139,0.12)', color: '#2d8b8b' }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(45,139,139,0.12)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(45,139,139,0.06)')}>
+                style={{ background: 'rgba(var(--nous-accent-rgb),0.06)', border: '1px solid rgba(var(--nous-accent-rgb),0.12)', color: 'var(--nous-accent)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(var(--nous-accent-rgb),0.12)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(var(--nous-accent-rgb),0.06)')}>
                 {ex}
               </button>
             ))}
@@ -192,7 +192,7 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
             placeholder="e.g. Exam on March 15 covering chapters 1–5..."
             value={goal}
             onChange={e => setGoal(e.target.value)}
-            onFocus={e => (e.currentTarget.style.border = '1px solid rgba(45,139,139,0.35)')}
+            onFocus={e => (e.currentTarget.style.border = '1px solid rgba(var(--nous-accent-rgb),0.35)')}
             onBlur={e => (e.currentTarget.style.border = '1px solid rgba(255,255,255,0.06)')}
           />
 
@@ -203,7 +203,7 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
               </p>
               {weeklyEvents.slice(0, 3).map(e => (
                 <div key={e.id} className="flex items-center gap-2 py-1">
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: e.color || '#2d8b8b' }} />
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: e.color || 'var(--nous-accent)' }} />
                   <span className="text-[11px] truncate" style={{ color: 'var(--nous-secondary)' }}>{e.title}</span>
                 </div>
               ))}
@@ -219,9 +219,9 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
             disabled={loading || (!goal.trim() && !pdf)}
             className="w-full h-11 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
             style={{
-              background: loading || (!goal.trim() && !pdf) ? 'rgba(45,139,139,0.1)' : 'linear-gradient(135deg, #2d8b8b, #1d6b6b)',
+              background: loading || (!goal.trim() && !pdf) ? 'rgba(var(--nous-accent-rgb),0.1)' : 'linear-gradient(135deg, var(--nous-accent), var(--nous-accent2))',
               color: loading || (!goal.trim() && !pdf) ? 'var(--nous-secondary)' : '#fff',
-              boxShadow: loading || (!goal.trim() && !pdf) ? 'none' : '0 4px 20px rgba(45,139,139,0.35)',
+              boxShadow: loading || (!goal.trim() && !pdf) ? 'none' : '0 4px 20px rgba(var(--nous-accent-rgb),0.35)',
               cursor: loading || (!goal.trim() && !pdf) ? 'not-allowed' : 'pointer',
             }}>
             {loading ? (

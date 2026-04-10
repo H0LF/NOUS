@@ -127,8 +127,8 @@ export default function CalendarPage() {
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
             style={{
-              background: "linear-gradient(135deg, #2d8b8b 0%, #1d6b6b 100%)",
-              boxShadow: "0 4px 14px rgba(45,139,139,0.3)",
+              background: "linear-gradient(135deg, var(--nous-accent) 0%, var(--nous-accent2) 100%)",
+              boxShadow: "0 4px 14px rgba(var(--nous-accent-rgb),0.3)",
             }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -177,8 +177,8 @@ export default function CalendarPage() {
             onClick={() => setIsAIPlannerOpen(true)}
             className="flex items-center gap-1.5 h-8 px-3.5 rounded-full text-[11px] font-bold transition-all duration-200 active:scale-95 hover:scale-105"
             style={{
-              background: "linear-gradient(135deg, #2d8b8b 0%, #45abab 100%)",
-              boxShadow: "0 2px 12px rgba(45,139,139,0.35)",
+              background: "linear-gradient(135deg, var(--nous-accent) 0%, var(--nous-accent2) 100%)",
+              boxShadow: "0 2px 12px rgba(var(--nous-accent-rgb),0.35)",
               color: "#ffffff",
               border: "none",
             }}

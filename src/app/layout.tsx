@@ -20,8 +20,8 @@ export const metadata: Metadata = {
   description: "The AI-Powered Productivity App",
   manifest: "/manifest.json",
   icons: {
-    icon: "/icons/icon-192x192.png",
-    apple: "/icons/icon-192x192.png",
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
   },
 };
 

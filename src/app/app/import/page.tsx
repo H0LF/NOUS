@@ -335,7 +335,7 @@ export default function ImportPage() {
           <div
             className="px-4 py-2 text-[10px] font-semibold uppercase tracking-widest"
             style={{
-              background: "rgba(45,139,139,0.08)",
+              background: "rgba(var(--nous-accent-rgb),0.08)",
               color: "var(--nous-accent)",
             }}
           >
@@ -422,7 +422,7 @@ export default function ImportPage() {
             className="w-full py-3 rounded-xl font-semibold text-[14px] transition-all"
             style={{
               background:
-                status === "running" ? "rgba(45,139,139,0.3)" : "#2d8b8b",
+                status === "running" ? "rgba(var(--nous-accent-rgb),0.3)" : "var(--nous-accent)",
               color: "#fff",
               cursor: status === "running" ? "not-allowed" : "pointer",
             }}
@@ -435,17 +435,17 @@ export default function ImportPage() {
               className="flex-1 py-3 rounded-xl text-center font-semibold text-[14px]"
               style={{ background: "rgba(48,196,141,0.15)", color: "#30c48d" }}
             >
-              ✓ Import complete
+              Import complete
             </div>
             <a
               href="/app/calendar"
               className="flex-1 py-3 rounded-xl text-center font-semibold text-[14px] transition-all"
               style={{
-                background: "rgba(45,139,139,0.2)",
+                background: "rgba(var(--nous-accent-rgb),0.2)",
                 color: "var(--nous-accent)",
               }}
             >
-              Go to Calendar →
+              Go to Calendar
             </a>
           </div>
         )}

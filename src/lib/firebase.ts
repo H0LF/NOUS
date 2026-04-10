@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, getRedirectResult, signOut as firebaseSignOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 /*
@@ -40,21 +40,11 @@ if (typeof window !== "undefined") {
 
 export const googleProvider = new GoogleAuthProvider();
 
+export { getRedirectResult };
+
 export const signInWithGoogle = async () => {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    return result.user;
-  } catch (error: unknown) {
-    // User closed the popup — not an error worth surfacing
-    if (
-      error instanceof Error &&
-      (error as { code?: string }).code === "auth/popup-closed-by-user"
-    ) {
-      return null;
-    }
-    console.error("Error signing in with Google", error);
-    throw error;
-  }
+  const result = await signInWithPopup(auth, googleProvider);
+  return result.user;
 };
 
 export const signOutUser = async () => {

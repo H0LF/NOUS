@@ -34,8 +34,8 @@ export const GeminiKeyInput = () => {
           className="shrink-0 flex items-center gap-1 text-[11px] font-medium px-2.5 py-1.5 rounded-lg transition-all"
           style={{
             color: "var(--nous-accent)",
-            background: "rgba(45,139,139,0.08)",
-            border: "1px solid rgba(45,139,139,0.2)",
+            background: "rgba(var(--nous-accent-rgb),0.08)",
+            border: "1px solid rgba(var(--nous-accent-rgb),0.2)",
             textDecoration: "none",
           }}
         >

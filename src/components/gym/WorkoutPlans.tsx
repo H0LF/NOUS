@@ -133,8 +133,8 @@ export const WorkoutPlans = ({ onLoadPlan }: WorkoutPlansProps) => {
           onClick={() => setIsCreating(true)}
           className="w-full py-3 rounded-xl text-sm font-semibold border-dashed transition-all"
           style={{
-            background: "rgba(45,139,139,0.06)",
-            border: "1.5px dashed rgba(45,139,139,0.35)",
+            background: "rgba(var(--nous-accent-rgb),0.06)",
+            border: "1.5px dashed rgba(var(--nous-accent-rgb),0.35)",
             color: "var(--nous-accent)",
           }}
         >
@@ -188,8 +188,8 @@ export const WorkoutPlans = ({ onLoadPlan }: WorkoutPlansProps) => {
                     onClick={() => setPickerOpenFor(i)}
                     className="shrink-0 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all"
                     style={{
-                      background: "rgba(45,139,139,0.1)",
-                      border: "1px solid rgba(45,139,139,0.25)",
+                      background: "rgba(var(--nous-accent-rgb),0.1)",
+                      border: "1px solid rgba(var(--nous-accent-rgb),0.25)",
                       color: "var(--nous-accent)",
                       whiteSpace: "nowrap",
                     }}
@@ -262,8 +262,8 @@ export const WorkoutPlans = ({ onLoadPlan }: WorkoutPlansProps) => {
             onClick={handleSavePlan}
             className="w-full py-2.5 rounded-xl text-sm font-bold transition-all"
             style={{
-              background: "rgba(45,139,139,0.15)",
-              border: "1px solid rgba(45,139,139,0.3)",
+              background: "rgba(var(--nous-accent-rgb),0.15)",
+              border: "1px solid rgba(var(--nous-accent-rgb),0.3)",
               color: "var(--nous-accent)",
             }}
           >
@@ -277,9 +277,9 @@ export const WorkoutPlans = ({ onLoadPlan }: WorkoutPlansProps) => {
         <div className="flex flex-col items-center justify-center py-12 gap-3">
           <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center"
-            style={{ background: "rgba(45,139,139,0.08)", border: "1px solid rgba(45,139,139,0.15)" }}
+            style={{ background: "rgba(var(--nous-accent-rgb),0.08)", border: "1px solid rgba(var(--nous-accent-rgb),0.15)" }}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2d8b8b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--nous-accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
               <rect x="9" y="3" width="6" height="4" rx="1" />
               <path d="M9 12h6M9 16h4" />
@@ -303,9 +303,9 @@ export const WorkoutPlans = ({ onLoadPlan }: WorkoutPlansProps) => {
             <div className="flex items-center gap-3">
               <div
                 className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: "rgba(45,139,139,0.1)", border: "1px solid rgba(45,139,139,0.2)" }}
+                style={{ background: "rgba(var(--nous-accent-rgb),0.1)", border: "1px solid rgba(var(--nous-accent-rgb),0.2)" }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2d8b8b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--nous-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6.5 6.5h11" /><path d="M6.5 17.5h11" />
                   <path d="M6 20v-4" /><path d="M18 20v-4" />
                   <path d="M6 8V4" /><path d="M18 8V4" />
@@ -359,8 +359,8 @@ export const WorkoutPlans = ({ onLoadPlan }: WorkoutPlansProps) => {
                 onClick={() => { onLoadPlan(t.exercises); toast.success(`"${t.name}" loaded!`); }}
                 className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
                 style={{
-                  background: "rgba(45,139,139,0.15)",
-                  border: "1px solid rgba(45,139,139,0.3)",
+                  background: "rgba(var(--nous-accent-rgb),0.15)",
+                  border: "1px solid rgba(var(--nous-accent-rgb),0.3)",
                   color: "var(--nous-accent)",
                 }}
               >

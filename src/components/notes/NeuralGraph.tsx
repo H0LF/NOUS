@@ -3,6 +3,14 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Note, Folder } from "@/types";
 import { FOLDER_COLORS } from "@/lib/constants";
 
+interface ContextMenu {
+  x: number;
+  y: number;
+  nodeId: string;
+  nodeLabel: string;
+  isFolder: boolean;
+}
+
 interface GraphNode {
   id: string;
   label: string;
@@ -28,8 +36,6 @@ interface NeuralGraphProps {
   activeNoteId: string | null;
   onNodeClick: (id: string) => void;
 }
-
-const ACCENT = "#2d8b8b";
 
 // Cache CSS variable reads to avoid getComputedStyle() on every animation frame.
 // Refreshed every 500ms so theme changes are picked up promptly.
@@ -61,6 +67,7 @@ export const NeuralGraph = ({
     y: number;
     label: string;
   } | null>(null);
+  const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
 
   // Camera (pan + zoom)
   const camRef = useRef({ x: 0, y: 0, zoom: 1 });
@@ -169,7 +176,7 @@ export const NeuralGraph = ({
           vx: prev?.vx ?? 0,
           vy: prev?.vy ?? 0,
           radius: 6,
-          color: ACCENT + "cc",
+          color: getCSSVar("--nous-accent") + "cc",
           pulse: prev?.pulse ?? Math.random() * Math.PI * 2,
           isFolder: false,
         });
@@ -375,10 +382,10 @@ export const NeuralGraph = ({
 
         const grad = ctx.createLinearGradient(src.x, src.y, tgt.x, tgt.y);
         if (isAct) {
-          grad.addColorStop(0, isExplicit ? "rgba(45,139,139,0.8)" : `rgba(${edgeBase},0.28)`);
+          grad.addColorStop(0, isExplicit ? `rgba(${getCSSVar("--nous-accent-rgb")},0.8)` : `rgba(${edgeBase},0.28)`);
           grad.addColorStop(1, isExplicit ? "rgba(96,165,250,0.8)" : `rgba(${edgeBase},0.28)`);
         } else {
-          grad.addColorStop(0, isExplicit ? "rgba(45,139,139,0.3)" : `rgba(${edgeBase},0.1)`);
+          grad.addColorStop(0, isExplicit ? `rgba(${getCSSVar("--nous-accent-rgb")},0.3)` : `rgba(${edgeBase},0.1)`);
           grad.addColorStop(1, isExplicit ? "rgba(96,165,250,0.3)" : `rgba(${edgeBase},0.1)`);
         }
         ctx.beginPath();
@@ -393,8 +400,8 @@ export const NeuralGraph = ({
           const px = src.x + (tgt.x - src.x) * t;
           const py = src.y + (tgt.y - src.y) * t;
           const pg = ctx.createRadialGradient(px, py, 0, px, py, 5);
-          pg.addColorStop(0, ACCENT);
-          pg.addColorStop(1, "rgba(45,139,139,0)");
+          pg.addColorStop(0, getCSSVar("--nous-accent"));
+          pg.addColorStop(1, `rgba(${getCSSVar("--nous-accent-rgb")},0)`);
           ctx.beginPath();
           ctx.arc(px, py, 5, 0, Math.PI * 2);
           ctx.fillStyle = pg;
@@ -412,7 +419,7 @@ export const NeuralGraph = ({
         if (isActive || isHovered || node.isFolder) {
           const glowR = r + (node.isFolder ? 14 : 9) + pulseAmp * 3;
           const grd = ctx.createRadialGradient(node.x, node.y, r * 0.5, node.x, node.y, glowR);
-          grd.addColorStop(0, isActive ? "rgba(45,139,139,0.45)" : baseColor + "38");
+          grd.addColorStop(0, isActive ? `rgba(${getCSSVar("--nous-accent-rgb")},0.45)` : baseColor + "38");
           grd.addColorStop(1, baseColor + "00"); // color-matched transparent — no black bleed
           ctx.beginPath();
           ctx.arc(node.x, node.y, glowR, 0, Math.PI * 2);
@@ -442,7 +449,7 @@ export const NeuralGraph = ({
         grd.addColorStop(0, isActive ? "#a8d8d8" : baseColor + "ee");
         grd.addColorStop(
           1,
-          isActive ? ACCENT : baseColor + (node.isFolder ? "99" : "55"),
+          isActive ? getCSSVar("--nous-accent") : baseColor + (node.isFolder ? "99" : "55"),
         );
         ctx.beginPath();
         ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
@@ -452,7 +459,7 @@ export const NeuralGraph = ({
         ctx.beginPath();
         ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
         ctx.strokeStyle = isActive
-          ? "#45abab"
+          ? getCSSVar("--nous-accent2")
           : baseColor + (node.isFolder ? "ff" : "88");
         ctx.lineWidth = isActive ? 2.5 : node.isFolder ? 2 : 1;
         ctx.stroke();
@@ -668,6 +675,50 @@ export const NeuralGraph = ({
     camRef.current = { x: 0, y: 0, zoom: 1 };
   }, []);
 
+  const zoomToFit = useCallback(() => {
+    const canvas = canvasRef.current;
+    const nodes = nodesRef.current;
+    if (!canvas || nodes.length === 0) return;
+    const W = canvas.offsetWidth;
+    const H = canvas.offsetHeight;
+    const padding = 60;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const n of nodes) {
+      if (n.x - n.radius < minX) minX = n.x - n.radius;
+      if (n.x + n.radius > maxX) maxX = n.x + n.radius;
+      if (n.y - n.radius < minY) minY = n.y - n.radius;
+      if (n.y + n.radius > maxY) maxY = n.y + n.radius;
+    }
+    const contentW = maxX - minX || 1;
+    const contentH = maxY - minY || 1;
+    const zoom = Math.min(
+      4,
+      Math.max(0.3, Math.min((W - padding * 2) / contentW, (H - padding * 2) / contentH))
+    );
+    camRef.current = {
+      x: W / 2 - ((minX + maxX) / 2) * zoom,
+      y: H / 2 - ((minY + maxY) / 2) * zoom,
+      zoom,
+    };
+  }, []);
+
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      const node = getNodeAt(e.clientX, e.clientY);
+      if (!node) { setContextMenu(null); return; }
+      const rect = canvasRef.current!.getBoundingClientRect();
+      setContextMenu({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+        nodeId: node.id,
+        nodeLabel: node.label,
+        isFolder: node.isFolder,
+      });
+    },
+    [getNodeAt],
+  );
+
   return (
     <div className="relative w-full h-full" style={{ background: "var(--nous-bg)" }}>
       {notes.length === 0 && (
@@ -677,8 +728,8 @@ export const NeuralGraph = ({
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center"
             style={{
-              background: "rgba(45,139,139,0.1)",
-              border: "1px solid rgba(45,139,139,0.2)",
+              background: "rgba(var(--nous-accent-rgb),0.1)",
+              border: "1px solid rgba(var(--nous-accent-rgb),0.2)",
             }}
           >
             <svg
@@ -686,7 +737,7 @@ export const NeuralGraph = ({
               height="18"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#2d8b8b"
+              stroke="var(--nous-accent)"
               strokeWidth="1.8"
             >
               <circle cx="18" cy="5" r="3" />
@@ -714,10 +765,71 @@ export const NeuralGraph = ({
           hoveredRef.current = null;
           setTooltip(null);
         }}
+        onContextMenu={handleContextMenu}
+        onClick={() => setContextMenu(null)}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       />
+
+      {/* Right-click context menu */}
+      {contextMenu && (
+        <div
+          className="absolute z-50 rounded-xl py-1.5 shadow-2xl"
+          style={{
+            left: contextMenu.x,
+            top: contextMenu.y,
+            background: "var(--nous-surface)",
+            border: "1px solid rgba(var(--nous-accent-rgb),0.2)",
+            minWidth: 160,
+            boxShadow: "0 16px 48px rgba(0,0,0,0.5)",
+          }}
+        >
+          <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--nous-secondary)" }}>
+            {contextMenu.nodeLabel}
+          </div>
+          {!contextMenu.isFolder && (
+            <>
+              <button
+                onMouseDown={() => { onNodeClick(contextMenu.nodeId); setContextMenu(null); }}
+                className="w-full text-left flex items-center gap-2.5 px-3 py-2 text-[12px] transition-colors"
+                style={{ color: "var(--nous-primary)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(var(--nous-accent-rgb),0.10)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                Open note
+              </button>
+              <button
+                onMouseDown={() => {
+                  // Focus this node by centering camera on it
+                  const node = nodesRef.current.find(n => n.id === contextMenu.nodeId);
+                  if (node) {
+                    const canvas = canvasRef.current;
+                    if (canvas) {
+                      const W = canvas.offsetWidth, H = canvas.offsetHeight;
+                      camRef.current = { x: W / 2 - node.x * camRef.current.zoom, y: H / 2 - node.y * camRef.current.zoom, zoom: camRef.current.zoom };
+                    }
+                  }
+                  setContextMenu(null);
+                }}
+                className="w-full text-left flex items-center gap-2.5 px-3 py-2 text-[12px] transition-colors"
+                style={{ color: "var(--nous-primary)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(var(--nous-accent-rgb),0.10)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                Focus in graph
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Zoom controls */}
       <div className="absolute bottom-3 right-3 flex flex-col gap-1">
@@ -764,6 +876,20 @@ export const NeuralGraph = ({
           {"\u2212"}
         </button>
         <button
+          onClick={zoomToFit}
+          className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
+          style={{
+            background: "rgba(255,255,255,0.06)",
+            color: "#6a6a7e",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+          title="Zoom to fit"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M3 9V5a2 2 0 0 1 2-2h4M15 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M9 21H5a2 2 0 0 1-2-2v-4"/>
+          </svg>
+        </button>
+        <button
           onClick={resetCamera}
           className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
           style={{
@@ -805,7 +931,7 @@ export const NeuralGraph = ({
             left: tooltip.x,
             top: tooltip.y,
             background: "var(--nous-surface)",
-            border: "1px solid rgba(45,139,139,0.3)",
+            border: "1px solid rgba(var(--nous-accent-rgb),0.3)",
             color: "var(--nous-primary)",
             transform: "translateX(-50%)",
             boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
