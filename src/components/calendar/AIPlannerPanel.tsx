@@ -17,7 +17,6 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
   const [loading, setLoading] = useState(false);
   const [pdf, setPdf] = useState<{ name: string; base64: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { settings } = useStore();
   const { saveDoc } = useFirestore();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,7 +35,6 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
 
   const handleSubmit = async () => {
     if (!goal.trim() && !pdf) { toast.error("Enter a goal or attach a PDF"); return; }
-    if (!settings.geminiApiKey) { toast.error("Gemini API Key missing — set it in Settings."); return; }
 
     setLoading(true);
     try {
@@ -45,7 +43,6 @@ export const AIPlannerPanel = ({ isOpen, onClose, weeklyEvents, userId }: AIPlan
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId, goal, weeklyEvents,
-          geminiApiKey: settings.geminiApiKey,
           pdfBase64: pdf?.base64,
           pdfName: pdf?.name,
         }),

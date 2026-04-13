@@ -3,14 +3,14 @@ import { callGeminiJSON } from "@/lib/gemini";
 
 export async function POST(req: NextRequest) {
   try {
-    const { description, geminiApiKey: userKey } = await req.json();
-    const geminiApiKey = userKey || process.env.GEMINI_API_KEY;
+    const { description } = await req.json();
+    const geminiApiKey = process.env.GEMINI_API_KEY;
 
-    if (!description || !geminiApiKey) {
-      return NextResponse.json(
-        { error: "Missing description or API key" },
-        { status: 400 },
-      );
+    if (!description) {
+      return NextResponse.json({ error: "Missing description" }, { status: 400 });
+    }
+    if (!geminiApiKey) {
+      return NextResponse.json({ error: "AI features are not configured on this server." }, { status: 503 });
     }
 
     const today = new Date().toISOString().split("T")[0];

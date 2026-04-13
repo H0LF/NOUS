@@ -6,7 +6,7 @@ interface InlineFilePart {
 export async function callGemini(prompt: string, apiKey: string, file?: InlineFilePart): Promise<string> {
   if (!apiKey) throw new Error("Gemini API Key is required");
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`;
 
   type GeminiPart = { text: string } | { inlineData: { mimeType: string; data: string } };
   const parts: GeminiPart[] = [];
@@ -23,7 +23,11 @@ export async function callGemini(prompt: string, apiKey: string, file?: InlineFi
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.error?.message || "Error calling Gemini API");
+    const msg: string = errorData.error?.message || "Error calling Gemini API";
+    if (msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("rate")) {
+      throw new Error("Gemini API quota exceeded. Please wait a moment or check your API key billing at https://ai.dev/rate-limit.");
+    }
+    throw new Error(msg);
   }
 
   const data = await response.json();
@@ -33,7 +37,7 @@ export async function callGemini(prompt: string, apiKey: string, file?: InlineFi
 export async function callGeminiJSON<T>(prompt: string, apiKey: string, file?: InlineFilePart): Promise<T> {
   if (!apiKey) throw new Error("Gemini API Key is required");
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`;
 
   type GeminiPart = { text: string } | { inlineData: { mimeType: string; data: string } };
   const parts: GeminiPart[] = [];
@@ -54,7 +58,11 @@ export async function callGeminiJSON<T>(prompt: string, apiKey: string, file?: I
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.error?.message || "Error calling Gemini API");
+    const msg: string = errorData.error?.message || "Error calling Gemini API";
+    if (msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("rate")) {
+      throw new Error("Gemini API quota exceeded. Please wait a moment or check your API key billing at https://ai.dev/rate-limit.");
+    }
+    throw new Error(msg);
   }
 
   const data = await response.json();

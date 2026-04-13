@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { ThemeToggle } from "@/components/settings/ThemeToggle";
-import { GeminiKeyInput } from "@/components/settings/GeminiKeyInput";
 import { UserProfile } from "@/components/settings/UserProfile";
 import { GamificationPanel } from "@/components/gamification/GamificationPanel";
 import { useSettings } from "@/hooks/useSettings";
@@ -211,13 +210,6 @@ export default function SettingsPage() {
         </h2>
         <ThemeToggle />
         <AccentColorPicker />
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-xs font-bold text-nous-secondary uppercase tracking-wider">
-          Integration
-        </h2>
-        <GeminiKeyInput />
       </section>
 
       <div className="pt-8 text-center text-xs text-nous-secondary">

@@ -182,6 +182,7 @@ export const EventModal = ({
   const [room, setRoom] = useState("");
   const [classType, setClassType] = useState<ClassType>("Teórica");
   const [date, setDate] = useState("");
+  const [eventType, setEventType] = useState<"exam" | "project" | "">("");
 
   useEffect(() => {
     if (!isOpen) return;
@@ -201,6 +202,7 @@ export const EventModal = ({
       else if (ct === "Prática") setClassType("Prática");
       else setClassType("Teórica");
       setDate(event.date);
+      setEventType(event.eventType || "");
     } else {
       setTitle("");
       setColor("#7c6bff");
@@ -213,6 +215,7 @@ export const EventModal = ({
       setRoom("");
       setClassType("Teórica");
       setDate(defaultDate || new Date().toISOString().split("T")[0]);
+      setEventType("");
     }
   }, [isOpen, event, defaultTime, defaultDate]);
 
@@ -258,6 +261,7 @@ export const EventModal = ({
         isWeekly,
         isClass,
         ...(isClass ? { room, classType } : {}),
+        ...(eventType ? { eventType } : {}),
         createdAt: event?.createdAt || new Date().toISOString(),
       };
 
@@ -323,6 +327,29 @@ export const EventModal = ({
               className={timeInputCls}
               style={{ colorScheme: "light dark", width: "100%" }}
             />
+          </div>
+        )}
+
+        {!isWeekly && (
+          <div className="flex items-center justify-between py-2 border-b border-nous-border/50">
+            <span className="text-sm font-medium text-nous-secondary">Deadline Type</span>
+            <div className="flex gap-1.5">
+              {(["", "exam", "project"] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setEventType(t)}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all"
+                  style={{
+                    background: eventType === t ? (t === "exam" ? "#ef4444" : t === "project" ? "#f97316" : "var(--nous-accent)") : "var(--nous-surface)",
+                    color: eventType === t ? "#fff" : "var(--nous-secondary)",
+                    border: `1px solid ${eventType === t ? "transparent" : "var(--nous-border)"}`,
+                  }}
+                >
+                  {t === "" ? "None" : t === "exam" ? "Exam" : "Project"}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 

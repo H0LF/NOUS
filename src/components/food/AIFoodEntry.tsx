@@ -5,27 +5,22 @@ import toast from "react-hot-toast";
 
 interface AIFoodEntryProps {
   onResult: (data: any) => void;
-  geminiApiKey: string;
 }
 
-export const AIFoodEntry = ({ onResult, geminiApiKey }: AIFoodEntryProps) => {
+export const AIFoodEntry = ({ onResult }: AIFoodEntryProps) => {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!description.trim()) return;
-    if (!geminiApiKey) {
-      toast.error("Gemini API Key is missing");
-      return;
-    }
 
     setLoading(true);
     try {
       const res = await fetch("/api/ai/food", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description, geminiApiKey }),
+        body: JSON.stringify({ description }),
       });
 
       const data = await res.json();

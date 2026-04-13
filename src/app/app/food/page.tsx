@@ -189,10 +189,7 @@ export default function FoodPage() {
         <div />
       </div>
 
-      <AIFoodEntry
-        onResult={setConfirmModalData}
-        geminiApiKey={settings.geminiApiKey}
-      />
+      <AIFoodEntry onResult={setConfirmModalData} />
 
       {/* Meal sections */}
       <div className="space-y-4">

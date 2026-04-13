@@ -11,6 +11,7 @@ export interface CalendarEvent {
   isClass: boolean;
   room?: string;
   classType?: "Teórica" | "Teórico-Prática" | "Prática";
+  eventType?: "exam" | "project"; // deadline marker
   createdAt: string;
 }
 

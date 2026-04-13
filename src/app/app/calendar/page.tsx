@@ -33,6 +33,12 @@ export default function CalendarPage() {
   // Week always starts Monday
   const monday = startOfWeek(currentWeekStart, { weekStartsOn: 1 });
 
+  // ── All upcoming deadlines (exam or project), sorted by date ─────────────
+  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const deadlines = events
+    .filter((e: CalendarEvent) => e.eventType && !e.isWeekly && e.date >= todayStr)
+    .sort((a: CalendarEvent, b: CalendarEvent) => a.date.localeCompare(b.date));
+
   const getSlotDate = (dayIndex: number) =>
     format(addDays(monday, dayIndex), "yyyy-MM-dd");
 
@@ -233,9 +239,71 @@ export default function CalendarPage() {
       </div>
 
       {/* ── Calendar card ── */}
-      <div className="flex-1 min-h-0 px-4 pb-24">
+      <div className="flex-1 min-h-0 px-4 pb-24 flex gap-3">
+
+        {/* ── Deadlines side panel (desktop only) ── */}
+        {deadlines.length > 0 && (
+          <div
+            className="hidden sm:flex flex-col w-[168px] shrink-0 rounded-[20px] overflow-hidden"
+            style={{
+              background: "var(--nous-surface)",
+              border: "1px solid var(--nous-border)",
+            }}
+          >
+            {/* panel header */}
+            <div
+              className="px-3.5 pt-3.5 pb-2 shrink-0"
+              style={{ borderBottom: "1px solid var(--nous-border)" }}
+            >
+              <p className="text-[9px] font-black uppercase tracking-[0.18em]" style={{ color: "var(--nous-accent)" }}>
+                Deadlines
+              </p>
+            </div>
+
+            {/* list */}
+            <div className="flex-1 overflow-y-auto no-scrollbar py-2 px-2 flex flex-col gap-1.5">
+              {deadlines.map((d) => (
+                <div
+                  key={d.id}
+                  className="flex flex-col gap-0.5 px-2.5 py-2 rounded-xl cursor-pointer transition-all hover:brightness-125 active:scale-[0.97]"
+                  style={{
+                    background: d.eventType === "exam" ? "rgba(239,68,68,0.07)" : "rgba(249,115,22,0.07)",
+                    border: `1px solid ${d.eventType === "exam" ? "rgba(239,68,68,0.2)" : "rgba(249,115,22,0.2)"}`,
+                  }}
+                  onClick={() => setCurrentWeekStart(startOfWeek(new Date(d.date + "T12:00:00"), { weekStartsOn: 1 }))}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="text-[8px] font-black uppercase tracking-wider px-1 py-0.5 rounded shrink-0"
+                      style={{
+                        background: d.eventType === "exam" ? "#ef4444" : "#f97316",
+                        color: "#fff",
+                      }}
+                    >
+                      {d.eventType === "exam" ? "Exam" : "Proj"}
+                    </span>
+                    <span
+                      className="text-[10px] font-semibold shrink-0 ml-auto"
+                      style={{ color: d.eventType === "exam" ? "#ef4444" : "#f97316" }}
+                    >
+                      {format(new Date(d.date + "T12:00:00"), "MMM d")}
+                    </span>
+                  </div>
+                  <p
+                    className="text-[11px] font-medium leading-tight"
+                    style={{ color: "var(--nous-primary)" }}
+                  >
+                    {d.title}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Calendar grid card ── */}
         <div
-          className="h-full rounded-[20px] overflow-hidden flex flex-col"
+          className="flex-1 min-w-0 h-full rounded-[20px] overflow-hidden flex flex-col"
           style={{
             background: "var(--nous-surface)",
             border: "1px solid var(--nous-border)",

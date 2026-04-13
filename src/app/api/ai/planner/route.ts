@@ -4,11 +4,14 @@ import { callGeminiJSON } from "@/lib/gemini";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId, goal, weeklyEvents, geminiApiKey: userKey, pdfBase64, pdfName } = body;
-    const geminiApiKey = userKey || process.env.GEMINI_API_KEY;
+    const { userId, goal, weeklyEvents, pdfBase64, pdfName } = body;
+    const geminiApiKey = process.env.GEMINI_API_KEY;
 
-    if (!userId || !geminiApiKey) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!userId) {
+      return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+    }
+    if (!geminiApiKey) {
+      return NextResponse.json({ error: "AI features are not configured on this server." }, { status: 503 });
     }
     if (!goal && !pdfBase64) {
       return NextResponse.json({ error: "Provide a goal or a PDF" }, { status: 400 });
